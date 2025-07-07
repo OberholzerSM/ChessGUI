@@ -10,6 +10,10 @@ Includes beginner-friendly features such as the option to display the attack ran
 
 - The 'ChessEngine' files provides the calculations for the chess game itself. They do not require the raylib library and could be reused for a potential UCI-compliant CLI version.
 
+- The 'Timer-Header.h' file provides a stopwatch class.
+
+- The 'Random_Header.h' file provides functions to generate random numbers.
+
 - The 'Raylib_GameHeader' files provide basic gamedev functionality that could potentionally be reused for future projects that make use of the raylib library.
 
 - The 'ChessGUI' files are responsible for loading and unloading the game as well as managing global ressources.
