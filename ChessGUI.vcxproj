@@ -142,30 +142,30 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ChessEngine.cpp" />
-    <ClCompile Include="ChessGUI.cpp" />
-    <ClCompile Include="LevelChessboard.cpp" />
-    <ClCompile Include="LevelOptions.cpp" />
-    <ClCompile Include="LevelStartMenu.cpp" />
-    <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Raylib_GameHeader.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="ChessEngine.h" />
-    <ClInclude Include="ChessGUI.h" />
-    <ClInclude Include="LevelChessboard.h" />
-    <ClInclude Include="LevelOptions.h" />
-    <ClInclude Include="LevelStartMenu.h" />
-    <ClInclude Include="Random_Header.h" />
-    <ClInclude Include="Raylib_GameHeader.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="Timer_Header.h" />
-  </ItemGroup>
-  <ItemGroup>
     <Image Include="Sprites\WindowIcon.ico" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\ChessEngine.h" />
+    <ClInclude Include="src\ChessGUI.h" />
+    <ClInclude Include="src\LevelChessboard.h" />
+    <ClInclude Include="src\LevelOptions.h" />
+    <ClInclude Include="src\LevelStartMenu.h" />
+    <ClInclude Include="src\Random_Header.h" />
+    <ClInclude Include="src\Raylib_GameHeader.h" />
+    <ClInclude Include="src\resource.h" />
+    <ClInclude Include="src\Timer_Header.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\ChessEngine.cpp" />
+    <ClCompile Include="src\ChessGUI.cpp" />
+    <ClCompile Include="src\LevelChessboard.cpp" />
+    <ClCompile Include="src\LevelOptions.cpp" />
+    <ClCompile Include="src\LevelStartMenu.cpp" />
+    <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\Raylib_GameHeader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
