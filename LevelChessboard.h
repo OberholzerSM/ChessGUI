@@ -57,6 +57,9 @@ private:
     //Have the Kings comment if they are in check.
     void commentCheck();
 
+    //Comment Moves based on the current board weight.
+    void commentValidMoves(int weightOld);
+
     //Pawn-Transform-Panel (ppt)
 
     //Assign the Pawn to be transformed.
@@ -171,12 +174,13 @@ private:
     bool paused = false, flipBoard = false, cursorActive = false, drawGameOverIsActive = false; //Gamestate Variable.
     bool playerControll[2] = {true,true};                                                       //Which side can be manually controlled by the player.
     const Color highlightColor1{0, 228, 48, 125},                                               //Green for white movement.
-        highlightColor2{190, 33, 55, 125},                                              //Maroon for black movement.
-        highlightColor3{255, 161, 0, 125},                                              //Orange for invalid movement.
-        greyOutColor{125,125,125,75};                                                   //Transparent Grey to grey out the board.
+        highlightColor2{190, 33, 55, 125},                                                      //Maroon for black movement.
+        highlightColor3{255, 161, 0, 125},                                                      //Orange for invalid movement.
+        greyOutColor{125,125,125,75};                                                           //Transparent Grey to grey out the board.
     const float speed = 10.0f;                                                                  //Speed with which the chesspieces move.
     int checkCounter[2] = {0,0};                                                                //How often a King was in check. Used only for speeches.                       
     double tReset = -1.5;                                                                       //The bot should wait for some time when reset is called.
+    int dialogueCounter = 1;                                                                    //Counter for commentValidMoves.
 
     //Pawn-Transform-Panel Variables
     bool pptActive = false;

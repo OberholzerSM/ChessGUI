@@ -176,11 +176,13 @@ void LevelChessboard::placedownPiece(const Chess::BoardPos &start, const Chess::
 
 			if(!pawnTransform)
 			{
+				const int weightOld = mainEngine.getBoardWeight();
 				const Chess::ChessMove move = {start, end, piece->type};
 				mainEngine.makeMove(move);
 				mainEngine.advanceTurn();
 				mainEngine.updateAttackZone();
 				commentCheck();
+				commentValidMoves(weightOld);
 
 				if(mainEngine.checkmate[0] || mainEngine.checkmate[1] || mainEngine.isdraw)
 					drawGameOverIsActive = true;
@@ -230,6 +232,7 @@ void LevelChessboard::reset()
 	paused = false;
 	pptActive = false;
 	speechBubbleActive = false;
+	dialogueCounter = 1;
 
 	tReset = Raylib::CLOCK.getTime();
 }
@@ -419,6 +422,88 @@ void LevelChessboard::commentCheck()
 			default:
 				break;
 			}
+		}
+	}
+}
+
+void LevelChessboard::commentValidMoves(int weightOld)
+{
+	//Determine which King should speak.
+	const PColour turnColour = mainEngine.turnColour;
+	ChessPiece *king = mainEngine.piecesList[turnColour][KING];
+
+	//Increase Dialogue Counter.
+	if( (dialogueCounter % 2) != (int)turnColour )
+		++dialogueCounter;
+	dialogueCounter = ++dialogueCounter % 6;
+
+	//Determine the Weight difference.
+	const int sign = (turnColour == PWHITE ? -1 : +1 );
+	const int dw = sign*(mainEngine.getBoardWeight() - weightOld);
+
+	if(dw >= pieceValue[QUEEN])
+	{
+		if(turnColour==PWHITE)
+			speak("Gasp!", king);
+		else if(turnColour==PBLACK)
+			speak("Impossible!", king);
+	}
+	else if(dw >= pieceValue[PAWN] )
+	{
+		switch(dialogueCounter)
+		{
+		case 1:
+			speak("Oh no!", king);
+			break;
+
+		case 2:
+			speak("Curses!", king);
+			break;
+
+		case 3:
+			speak("Not good...", king);
+			break;
+
+		case 4:
+			speak("You will pay for this!", king);
+			break;
+
+		case 5:
+			speak("That was one of my bravest warriors!", king);
+			break;
+
+		case 0:
+			speak("Not my mighty warrior!", king);
+			break;
+		}
+	}
+	else if(dw < 0)
+	{
+		switch(dialogueCounter)
+		{
+		case 1:
+			speak("You think that wise?", king);
+			break;
+
+		case 2:
+			speak("How foolish!", king);
+			break;
+
+		case 3:
+			speak("Huh?", king);
+			break;
+
+		case 4:
+			speak("I got you now!", king);
+			break;
+
+		case 5:
+			speak("Peculiar choice.", king);
+			break;
+
+		case 0:
+			speak("Victory is as good as mine!", king);
+			break;
 		}
 	}
 }
