@@ -4,7 +4,7 @@
 
 A simple chess program done to further learn C++ and its features such as threads.
 
-Includes beginner-friendly features such as the option to display the attack range of the player or the opponent.
+Includes beginner-friendly features such as the option to display the attack range of a player or individual pieces.
 
 ## File Structure
 
