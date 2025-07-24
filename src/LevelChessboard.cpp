@@ -27,8 +27,6 @@ void LevelChessboard::load()
 		//Set the Sprite Positions.
 		setChessPieceSpritePos();
 
-		botList[PBLACK].botType = METROPOLISBOT;
-
 		loaded = true;
 	}
 }

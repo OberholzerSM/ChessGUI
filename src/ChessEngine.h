@@ -33,6 +33,11 @@ namespace Chess
         PNONE,
     };
 
+    //Functions to transform an enum to string
+    std::string PTypeString(PType type);
+
+    std::string PColourString(PColour colour);
+
     //Enum possible Bottypes
     enum BotTypes
     {
@@ -190,6 +195,10 @@ public:
 
     //Debug: Print the Movement of this Chesspiece.
     void printMovement() const;
+
+    //Debug: Identify a chesspiece.
+
+    void identify() const;
 
     //Piece-specific
     

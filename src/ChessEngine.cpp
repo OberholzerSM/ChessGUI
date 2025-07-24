@@ -28,6 +28,47 @@ bool Chess::bitboardCheck(u64 bitboard, const BoardPos &pos)
     return (bitboard & bitboardKey[k]);
 }
 
+//Enum Identity Functions
+
+std::string Chess::PTypeString(PType type)
+{
+    switch(type)
+    {
+    case KING:
+        return "King";
+
+    case QUEEN:
+        return "Queen";
+
+    case BISHOP:
+        return "Bishop";
+
+    case KNIGHT:
+        return "Knight";
+
+    case ROOK:
+        return "Rook";
+
+    case PAWN:
+        return "Pawn";
+
+    }
+}
+
+std::string Chess::PColourString(PColour colour)
+{
+    switch(colour)
+    {
+    case PWHITE:
+        return "white";
+
+    case PBLACK:
+        return "black";
+
+    case PNONE:
+        return "no colour";
+    }
+}
 
 //ChessPiece Functions
 
@@ -125,6 +166,13 @@ void ChessPiece::printMovement() const
         std::cout << "  " << (char)('a' + i) << " ";
     }
     std::cout << "\n\n";
+}
+
+void ChessPiece::identify() const
+{
+    const std::string typeName = PTypeString(type);
+    const std::string colourName = PColourString(colour);
+    std::cout << "I am a " << colourName << ' ' << typeName << '\n';
 }
 
 //ChessPiece Piece-specific
@@ -2018,29 +2066,32 @@ void Bot::generateMoveRandomBot()
 
 void Bot::generateMoveMetropolisBot()
 {
-    //Initalize the board to perform the search on (necessary when using threads).
-    testEngine->loadFEN(mainEngine.getFEN().c_str());
-    testEngine->turnCounter = 0;
-    testEngine->saveBoardState(0);
+    const int sign = (botColour == PWHITE) ? +1 : -1;
+    const int weightOld = sign * mainEngine.getBoardWeight();
 
     int test = 0;
+    const int nMoves = mainEngine.nMovesLegal[botColour];
+
     while(1)
     {
+        //Initalize the board to perform the search on.
+        testEngine->loadFEN(mainEngine.getFEN().c_str());
+        testEngine->turnCounter = 0;
+        testEngine->saveBoardState(0);
+
         //Get a random move.
         generateMoveRandomBot();
 
-        //Get the weight and switch the sign such that its from the bots perspective.
-        const int sign = (botColour == PWHITE) ? +1 : -1;
-        int weightOld = sign * testEngine->getBoardWeight();
+        //Get the weight and switch the sign such that its from the bots perspective
         int weightNew = sign * getMoveWeight(depth, nextMove, testEngine);
 
         //Ensure Weights are positive and nonzero.
         const int minValue = abs(std::min(weightOld, weightNew));
-        weightOld += minValue + 1;
+        const int weightNorm = weightOld + minValue + 1;
         weightNew += minValue + 1;
 
         //Determine acceptance probability.
-        double prob = (double)weightNew / (double)weightOld;
+        double prob = (double)weightNew / (double)weightNorm;
 
         if(prob >= 1.0)
             break;
@@ -2052,38 +2103,135 @@ void Bot::generateMoveMetropolisBot()
         }
 
         test++;
-        if(test >= 1000)
-        {
-            std::cerr << "ERROR generateMoveMetropolisBot: Could not find suitable move!\n";
+        if(test >= nMoves)
             break;
-        }
     }
 }
 
 void Bot::generateMoveWeightedRandomBot1()
 {
-    testEngine->loadFEN(mainEngine.getFEN().c_str());
-    testEngine->turnCounter = 0;
-    testEngine->saveBoardState(0);
-
-    ChessPiece *piece = mainEngine.piecesListAvailable[botColour][chooseRandomPiece()];
-    int Z = 0;
-
-    for(const ChessMove &move : piece->moveList)
+    const int sign = (botColour == PWHITE) ? +1 : -1;
+    const ChessPiece *piece = mainEngine.piecesListAvailable[botColour][chooseRandomPiece()];
+    const int nMoves = piece->nMoves;
+    std::vector<int> weightList(nMoves);
+    int minWeight = INT_MAX;
+    int maxWeight = -INT_MAX;
+    int maxWeightID = 0;
+    for(int m=0; m<nMoves; m++)
     {
-        Z += getMoveWeight(depth, move, testEngine);
+        testEngine->loadFEN(mainEngine.getFEN().c_str());
+        testEngine->turnCounter = 0;
+        testEngine->saveBoardState(0);
+        weightList[m] = sign*getMoveWeight(depth, piece->moveList[m], testEngine);
+        if(weightList[m] < minWeight)
+            minWeight = weightList[m];
+
+        if(weightList[m] > maxWeight)
+        {
+            maxWeight = weightList[m];
+            maxWeightID = m;
+        }
+    }
+    minWeight = abs(minWeight);
+
+    //Ensure Weights are positive and nonzero
+    int Z = 0;
+    for(int m=0; m<nMoves; m++)
+    {
+        weightList[m] += minWeight + 1;
+        Z += weightList[m];
     }
 
+    int test = 0;
+    while(1)
+    {
+        const int ID = Random::randInt(0, nMoves-1);
+        nextMove = piece->moveList[ID];
+        const double prob = (double)weightList[ID] / (double)Z;
+        const double u = Random::randDouble();
+
+        if(u <= prob)
+            break;
+
+        test++;
+        if(test >= nMoves)
+        {
+            nextMove = piece->moveList[maxWeightID];
+            break;
+        }
+    }
 }
 
 void Bot::generateMoveWeightedRandomBot2()
 {
+    const int sign = (botColour == PWHITE) ? +1 : -1;
+    const int nMoves = mainEngine.nMovesLegal[botColour];
+    std::vector<int> weightList(nMoves);
+    int minWeight = INT_MAX;
+    int maxWeight = -INT_MAX;
+    int maxWeightID = 0;
+    for(int m=0; m<nMoves; m++)
+    {
+        testEngine->loadFEN(mainEngine.getFEN().c_str());
+        testEngine->turnCounter = 0;
+        testEngine->saveBoardState(0);
+        weightList[m] = sign*getMoveWeight(depth,mainEngine.moveListLegal[botColour][m],testEngine);
+        if(weightList[m] < minWeight)
+            minWeight = weightList[m];
 
+        if(weightList[m] > maxWeight)
+        {
+            maxWeight = weightList[m];
+            maxWeightID = m;
+        }
+    }
+    minWeight = abs(minWeight);
+
+    //Ensure Weights are positive and nonzero
+    int Z = 0;
+    for(int m=0; m<nMoves; m++)
+    {
+        weightList[m] += minWeight + 1;
+        Z += weightList[m];
+    }
+
+    int test = 0;
+    while(1)
+    {
+        const int ID = Random::randInt(0,nMoves-1);
+        nextMove = mainEngine.moveListLegal[botColour][ID];
+        const double prob = (double)weightList[ID] / (double)Z;
+        const double u = Random::randDouble();
+
+        if(u <= prob)
+            break;
+
+        test++;
+        if(test >= nMoves)
+        {
+            nextMove = mainEngine.moveListLegal[botColour][maxWeightID];
+            break;
+        }
+    }
 }
 
 void Bot::generateMoveOptimumBot1()
 {
+    //Pick a random Piece and get its moves.
+    const int ID = chooseRandomPiece();
+    const ChessPiece *piece = mainEngine.piecesListAvailable[botColour][ID];
+    const int nMoves = piece->nMoves;
+    std::vector<ChessMove> moveList(nMoves);
+    for(int m=0; m<nMoves; m++)
+    {
+        moveList[m] = piece->moveList[m];
+    }
 
+    //Find the best Move.
+    if(botColour == PWHITE)
+        findMaxMove(moveList);
+    else
+        findMinMove(moveList);
 }
 
 void Bot::generateMoveOptimumBot2()
