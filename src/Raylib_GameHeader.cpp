@@ -252,17 +252,30 @@ void Raylib::Button::draw(Color colorOn,Color colorOff,Color colorText,float rot
 {
     if(Window.isLoaded())
     {
-        Rectangle buttonRect = {x_draw.x+size.x/2.0f,x_draw.y+size.y/2.0f,size.x,size.y};
+        if(drawCircle)
+        {
+            const Vector2 xCircle = {x_draw.x + 0.5f*size.x, x_draw.y + 0.5f*size.y};
+            const Vector2 radius = {0.5f*size.x, 0.5f*size.y};
 
-        if(!pressed)
-            drawRectangle(buttonRect,colorOff,rotation,{size.x/2.0f,size.y/2.0f});
+            if(!pressed)
+                Raylib::drawCircle(xCircle, radius, colorOff);
+            else
+                Raylib::drawCircle(xCircle, radius, colorOn);
+        }
         else
-            drawRectangle(buttonRect, colorOn, rotation, {size.x/2.0f,size.y/2.0f});
+        {
+            Rectangle buttonRect = {x_draw.x+size.x/2.0f,x_draw.y+size.y/2.0f,size.x,size.y};
 
-        //Draw borders
-        constexpr float lineThick = 3.0f;
-        Rectangle borderRect = {x_draw.x,x_draw.y,size.x,size.y};
-        DrawRectangleLinesEx( convertRectangleRelativeToAbs(borderRect) ,lineThick, BLACK);
+            if(!pressed)
+                drawRectangle(buttonRect,colorOff,rotation,{size.x/2.0f,size.y/2.0f});
+            else
+                drawRectangle(buttonRect, colorOn, rotation, {size.x/2.0f,size.y/2.0f});
+
+            //Draw borders
+            constexpr float lineThick = 3.0f;
+            Rectangle borderRect = {x_draw.x,x_draw.y,size.x,size.y};
+            DrawRectangleLinesEx(convertRectangleRelativeToAbs(borderRect), lineThick, BLACK);
+        }
 
         drawButtonText(colorText);
     }

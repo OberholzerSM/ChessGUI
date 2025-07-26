@@ -156,7 +156,7 @@ namespace Raylib
 
         virtual void checkInput();
 
-        bool pressed{false},pressedOld{false},selected{false},textInsideButton = false;
+        bool pressed{false},pressedOld{false},selected{false},textInsideButton = false, drawCircle = false;
         float fontSize{15.0f};
 
     protected:
