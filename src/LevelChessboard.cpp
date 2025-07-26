@@ -431,9 +431,10 @@ void LevelChessboard::commentValidMoves(int weightOld)
 	ChessPiece *king = mainEngine.piecesList[turnColour][KING];
 
 	//Increase Dialogue Counter.
+	constexpr int nLines = 3;
 	if( (dialogueCounter % 2) != (int)turnColour )
 		++dialogueCounter;
-	dialogueCounter = ++dialogueCounter % 6;
+	dialogueCounter = ++dialogueCounter % (2*nLines);
 
 	//Determine the Weight difference.
 	const int sign = (turnColour == PWHITE ? -1 : +1 );
@@ -928,13 +929,12 @@ void LevelChessboard::inputBots()
 	}
 	else if(bot.moveChosen && bot.spriteArrived)
 	{
+		const int weightOld = mainEngine.getBoardWeight();
 		bot.executeMove();
 		mainEngine.updateAttackZone();
 
-		//Do not make comments when the opposing player is also a bot.
-		const Chess::PColour c = ((bot.botColour == PWHITE) ? PBLACK : PWHITE);
-		if(playerControll[c])
-			commentCheck();
+		commentValidMoves(weightOld);
+		commentCheck();
 
 		if(mainEngine.checkmate[0] || mainEngine.checkmate[1] || mainEngine.isdraw)
 			drawGameOverIsActive = true;
