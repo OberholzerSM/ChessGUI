@@ -116,6 +116,15 @@ Vector2 Raylib::getTextSize(const std::string &text, float fontSize, float spaci
     return { textSize.x/Window.widthf, textSize.y/Window.heightf };
 }
 
+void Raylib::drawCircle(Vector2 pos, Vector2 radius, Color color, Color edgeColor)
+{
+    const Vector2 posAbs = convertVector2RelativeToAbs(pos);
+    const Vector2 radiusAbs = convertVector2RelativeToAbs(radius);
+
+    DrawEllipse((int)posAbs.x, (int)posAbs.y, radiusAbs.x, radiusAbs.y, color);
+    DrawEllipseLines((int)posAbs.x, (int)posAbs.y, radiusAbs.x, radiusAbs.y, edgeColor);
+}
+
 //RaylibTexture
 
 void Raylib::RaylibTexture::load()

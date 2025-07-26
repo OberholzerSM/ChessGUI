@@ -79,6 +79,9 @@ namespace Raylib
     //Get the size of the Text in relative Coordinates
     Vector2 getTextSize(const std::string &text, float fontSize, float spacing, Font font = GetFontDefault());
 
+    //Draw a Circle
+    void drawCircle(Vector2 pos = {0.5f,0.5f}, Vector2 radius = {0.25f,0.25f}, Color color = WHITE, Color edgeColor = BLACK);
+
     //Generic Classes
 
     class RaylibTexture
@@ -147,6 +150,9 @@ namespace Raylib
         void draw(Color colorOn = GRAY,Color colorOff = LIGHTGRAY,Color colorText = WHITE,float rotation = 0.0f) const;
 
         void drawTextured(RaylibTexture &texture,Color colorOn = GRAY,Color colorOff = LIGHTGRAY,Color colorText = WHITE,float rotation = 0.0f) const;
+
+        Vector2 getPos() const { return x_draw; }
+        Vector2 getSize() const { return size; }
 
         virtual void checkInput();
 
