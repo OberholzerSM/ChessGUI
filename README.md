@@ -4,7 +4,13 @@
 
 A simple chess program done to further learn C++ and its features such as threads.
 
-Includes beginner-friendly features such as the option to display the attack range of a player or the movement range of individual pieces.
+## Features
+
+- Beginner-friendly features such as showing which squares a chesspiece can move to and the option to display the attack range of both sides.
+
+- The ability to rewind turns.
+
+- Six different Bots, which use various random means to pick their next move (safe for one bot that simply picks the best move).
 
 ## File Structure
 
