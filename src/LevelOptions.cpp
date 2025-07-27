@@ -17,6 +17,8 @@ void LevelOptions::load()
 	{
 		constexpr float fontSize = 35.0f;
 
+		loadButtons();
+
 		buttonExit.textInsideButton = true;
 		buttonExit.fontSize = fontSize;
 
@@ -26,17 +28,34 @@ void LevelOptions::load()
 
 void LevelOptions::input()
 {
-	sliderDepthWhite.input();
-	Chess::botList[PWHITE].depth = sliderDepthWhite.value;
-
-	sliderDepthBlack.input();
-	Chess::botList[PBLACK].depth = sliderDepthBlack.value;
-
-	buttonExit.checkInput();
-	if( IsKeyPressed(KEY_ESCAPE) || (buttonExit.pressed && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) )
+	if(!infoSquareActive)
 	{
-		levelOptions.unload();
-		levelStartMenu.load();
+		sliderDepthWhite.input();
+		Chess::botList[PWHITE].depth = sliderDepthWhite.value;
+
+		sliderDepthBlack.input();
+		Chess::botList[PBLACK].depth = sliderDepthBlack.value;
+
+		inputButtons();
+
+		buttonExit.checkInput();
+
+		if(IsKeyPressed(KEY_ESCAPE) || (buttonExit.pressed && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)))
+		{
+			levelOptions.unload();
+			levelStartMenu.load();
+		}
+	}
+	else if( IsMouseButtonPressed(MOUSE_LEFT_BUTTON) || IsKeyPressed(KEY_ESCAPE) || IsKeyPressed(KEY_SPACE) )
+	{
+		for(int l=0; l<2; l++)
+		{
+			for(int i=0; i<6; i++)
+			{
+				infoButtonList[l][i].pressed = false;
+			}
+		}
+		infoSquareActive = false;
 	}
 }
 
@@ -44,8 +63,13 @@ void LevelOptions::draw()
 {
 	if(loaded)
 	{
-		drawUI();
-		buttonExit.draw(DARKGRAY, DARKGRAY, RAYWHITE);
+		drawRectangle({0.5f,0.0f,0.5f,1.0f}, DARKBROWN);
+		drawLine({0.5f,0.0f}, {0.5f,1.0f}, 3.0f);
+		drawTitle();
+		drawSlider(sliderDepthWhite);
+		drawSlider(sliderDepthBlack);
+		drawButtons();
+		drawInfoSquare(infoSquareBotType);
 	}
 }
 
@@ -54,6 +78,80 @@ void LevelOptions::unload()
 	if(loaded)
 	{
 		loaded = false;
+	}
+}
+
+//Loading Functions
+
+void LevelOptions::loadButtons()
+{
+	std::vector<std::string> buttonNames = {"RANDOM","METRO","WEIGHTED1","WEIGHTED2","OPTIMUM1","OPTIMUM2"};
+
+	for(int i=0; i<6; i++)
+	{
+		const Vector2 buttonSize = {1.5f*squareSize.x,0.5f*squareSize.y};
+		const Vector2 circleSize = {0.3f*squareSize.x,0.3f*squareSize.y};
+
+		Vector2 buttonPos = { 0.0f, (2.5f + (float)(i/2)) * squareSize.y };
+		if(i%2 == 0)
+			buttonPos.x = 0.5f*squareSize.x;
+		else
+			buttonPos.x = 0.25f;
+
+		Vector2 circlePos = {buttonPos.x + 1.025f*buttonSize.x, buttonPos.y + 0.5f*(buttonSize.y - circleSize.y)};
+
+		buttonList[PWHITE][i].initialize(buttonPos,buttonSize,buttonNames[i].c_str());
+		infoButtonList[PWHITE][i].initialize(circlePos, circleSize, "?");
+
+		//Right side
+		buttonPos.x += 0.5f;
+		circlePos.x += 0.5f;
+
+		buttonList[PBLACK][i].initialize(buttonPos, buttonSize, buttonNames[i].c_str());
+		infoButtonList[PBLACK][i].initialize(circlePos, circleSize, "?");
+
+		for(int l=0; l<2; l++)
+		{
+			buttonList[l][i].textInsideButton = true;
+			buttonList[l][i].fontSize = 18.0f;
+
+			infoButtonList[l][i].drawCircle = true;
+			infoButtonList[l][i].textInsideButton = true;
+			infoButtonList[l][i].fontSize = 18.0f;
+
+			if(Chess::botList[l].botType == (Chess::BotTypes)i)
+				buttonList[l][i].pressed = true;
+		}
+	}
+}
+
+//Input Functions
+
+void LevelOptions::inputButtons()
+{
+	for(int l=0; l<2; l++)
+	{
+		for(int i=0; i<6; i++)
+		{
+			buttonList[l][i].checkInput();
+			if(buttonList[l][i].pressed)
+			{
+				Chess::botList[l].botType = (Chess::BotTypes)i;
+				//Deactivate all the other Switch Buttons
+				for(int j=0; j<6; j++)
+				{
+					if(j!=i)
+						buttonList[l][j].pressed = false;
+				}
+			}
+
+			infoButtonList[l][i].checkInput();
+			if( infoButtonList[l][i].pressed )
+			{
+				infoSquareBotType = (Chess::BotTypes)i;
+				infoSquareActive = true;
+			}
+		}
 	}
 }
 
@@ -69,20 +167,77 @@ void LevelOptions::drawSlider(const Slider &slider) const
 	drawText(sliderValue, {sliderPos.x, sliderPos.y + sliderSize.y + 0.01f},30.0f);
 }
 
-void LevelOptions::drawUI() const
+void LevelOptions::drawTitle() const
 {
-	drawRectangle({0.5f,0.0f,0.5f,1.0f},DARKBROWN);
-	drawLine({0.5f,0.0f},{0.5f,1.0f},3.0f);
-
 	constexpr float fontTitle = 50.0f;
 	static const Vector2 sliderWhitePos = sliderDepthWhite.getPos();
 	static const Vector2 sliderBlackPos = sliderDepthBlack.getPos();
 
 	drawText("White Bot", {sliderWhitePos.x, sliderWhitePos.y - 0.1f}, fontTitle);
-
-	drawSlider(sliderDepthWhite);
-
 	drawText("Black Bot", {sliderBlackPos.x, sliderBlackPos.y - 0.1f}, fontTitle);
+}
 
-	drawSlider(sliderDepthBlack);
+void LevelOptions::drawButtons() const
+{
+	for(int l=0; l<2; l++)
+	{
+		for(int i=0; i<6; i++)
+		{
+			buttonList[l][i].draw(GRAY, DARKGRAY, RAYWHITE);
+			infoButtonList[l][i].draw(BLUE, DARKBLUE, RAYWHITE);
+		}
+	}
+	buttonExit.draw(DARKGRAY, DARKGRAY, RAYWHITE);
+}
+
+void LevelOptions::drawInfoSquare(Chess::BotTypes botType) const
+{
+	if(infoSquareActive)
+	{
+		const Vector2 rectSize = {0.6f, 0.3f};
+		const Vector2 rectPos = {0.5f*(1.0f - rectSize.x), 0.5f*(1.0f - rectSize.y)};
+		const Rectangle rect = { rectPos.x, rectPos.y, rectSize.x, rectSize.y };
+		drawRectangle( rect, DARKBLUE );
+		drawRectangleLines(rect, 4.0f, BLACK);
+
+		std::string title, text;
+		switch(botType)
+		{
+		case RANDOMBOT:
+			title = "RANDOM BOT";
+			text = "Chooses moves at complete random.";
+			break;
+
+		case METROPOLISBOT:
+			title = "METROPOLIS BOT";
+			text = "Chooses moves at complete random,\nbut rejects moves that lead to\nworse positions.";
+			break;
+
+		case WEIGHTEDRANDOMBOT1:
+			title = "WEIGHTED RANDOM BOT 1";
+			text = "Chooses a chesspiece at random,\nthen chooses a random move based\non their weights.";
+			break;
+
+		case WEIGHTEDRANDOMBOT2:
+			title = "WEIGHTED RANDOM BOT 2";
+			text = "Chooses a random chesspiece and\nmove based on their weights.";
+			break;
+
+		case OPTIMUMBOT1:
+			title = "OPTIMUM BOT 1";
+			text = "Chooses a chesspiece at random,\nthen picks the best move.";
+			break;
+
+		case OPTIMUMBOT2:
+			title = "OPTIMUM BOT 2";
+			text = "Chooses the best move available.";
+			break;
+		}
+
+		const Vector2 titleSize = Raylib::getTextSize(title,50.0f,0.1f);
+		constexpr float d = 0.01f;
+
+		drawText(title,{0.5f - 0.5f*titleSize.x, rect.y + d},50.0f);
+		drawText(text,{rect.x + d, rect.y + titleSize.y + 5.0f*d},35.0f);
+	}
 }
