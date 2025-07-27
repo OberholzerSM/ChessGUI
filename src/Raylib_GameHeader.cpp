@@ -74,6 +74,11 @@ void Raylib::drawRectangle(Rectangle rect, Color color, float rotation, Vector2 
     DrawRectanglePro( convertRectangleRelativeToAbs(rect), convertVector2RelativeToAbs(rotationOrigin), rotation, color);
 }
 
+void Raylib::drawRectangleLines(Rectangle rect, float lineThick, Color color)
+{
+    DrawRectangleLinesEx(convertRectangleRelativeToAbs(rect), lineThick, color);
+}
+
 void Raylib::drawLine(Vector2 startpoint, Vector2 endpoint, float thickness, Color color)
 {
     const Vector2 windowRatio = {Window.widthf / (float)Window.widthStart, Window.heightf / (float)Window.heightStart};

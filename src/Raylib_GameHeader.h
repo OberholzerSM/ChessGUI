@@ -70,6 +70,9 @@ namespace Raylib
     //Draw a Rectangle using relative Coordinates.
     void drawRectangle(Rectangle rect = {.x=0.375f, .y=0.375f, .width=0.25f, .height=0.25f}, Color color = RED, float rotation = 0.0f, Vector2 rotationOrigin = {0.0f,0.0f});
 
+    //Draw a Rectangle frame using relative coordinates.
+    void drawRectangleLines(Rectangle rect = {.x=0.375f, .y=0.375f, .width=0.25f, .height=0.25f}, float lineThick = 1.0f, Color color = RED);
+
     //Draw a Line using relative Coordinates.
     void drawLine(Vector2 startpoint, Vector2 endpoint, float thickness = 5.0f, Color color = BLACK);
 
