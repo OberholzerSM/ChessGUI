@@ -513,7 +513,7 @@ void Engine::printChessboard() const
 
 void Engine::printDangerZones() const
 {
-    std::cout << "\nWhite Dangerzone:";
+    std::cout << "\nWhite Movement Range:";
     std::cout << "\n+---+---+---+---+---+---+---+---+\n";
     for(int j=0; j<8; j++)
     {
@@ -533,7 +533,7 @@ void Engine::printDangerZones() const
     }
     std::cout << "\n\n";
 
-    std::cout << "Black Dangerzone:";
+    std::cout << "Black Movement Range:";
     std::cout << "\n+---+---+---+---+---+---+---+---+\n";
     for(int j=0; j<8; j++)
     {
@@ -542,6 +542,49 @@ void Engine::printDangerZones() const
             if(i==0)
                 std::cout << '|';
             std::cout << ' ' << bitboardCheck(dangerZone[1], {i,j}) << " |";
+            if(i==7)
+                std::cout << ' ' << 8-j;
+        }
+        std::cout << "\n+---+---+---+---+---+---+---+---+\n";
+    }
+    for(int i=0; i<8; i++)
+    {
+        std::cout << "  " << (char)('a' + i) << " ";
+    }
+    std::cout << "\n\n";
+}
+
+void Engine::printAttackZones() const
+{
+    std::cout << "\nWhite Attack Range:";
+    std::cout << "\n+---+---+---+---+---+---+---+---+\n";
+    for(int j=0; j<8; j++)
+    {
+        for(int i=0; i<8; i++)
+        {
+            if(i==0)
+                std::cout << '|';
+            std::cout << ' ' << bitboardCheck(attackZone[0], {i,j}) << " |";
+            if(i==7)
+                std::cout << ' ' << 8-j;
+        }
+        std::cout << "\n+---+---+---+---+---+---+---+---+\n";
+    }
+    for(int i=0; i<8; i++)
+    {
+        std::cout << "  " << (char)('a' + i) << " ";
+    }
+    std::cout << "\n\n";
+
+    std::cout << "Black Attack Range:";
+    std::cout << "\n+---+---+---+---+---+---+---+---+\n";
+    for(int j=0; j<8; j++)
+    {
+        for(int i=0; i<8; i++)
+        {
+            if(i==0)
+                std::cout << '|';
+            std::cout << ' ' << bitboardCheck(attackZone[1], {i,j}) << " |";
             if(i==7)
                 std::cout << ' ' << 8-j;
         }

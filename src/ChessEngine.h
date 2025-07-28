@@ -283,6 +283,9 @@ public:
     //Print the Dangerzones (pseudolegal Movement reach) for both colours.
     void printDangerZones() const;
 
+    //Print the Attackzones (which squares are threatened) for both colours.
+    void printAttackZones() const;
+
     //Print a given Chessmove.
     void printMove(const ChessMove &move) const;
 
