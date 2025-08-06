@@ -85,7 +85,7 @@ void LevelOptions::unload()
 
 void LevelOptions::loadButtons()
 {
-	std::vector<std::string> buttonNames = {"RANDOM","METRO","WEIGHTED1","WEIGHTED2","OPTIMUM1","OPTIMUM2"};
+	std::vector<std::string> buttonNames = {"RANDOM","METRO","FOOL","JESTER","NOVICE","MASTER"};
 
 	for(int i=0; i<6; i++)
 	{
@@ -145,6 +145,10 @@ void LevelOptions::inputButtons()
 				}
 			}
 
+			//Prevent the user from deactivating the active button.
+			if(Chess::botList[l].botType == (Chess::BotTypes)i)
+				buttonList[l][i].pressed = true;
+
 			infoButtonList[l][i].checkInput();
 			if( infoButtonList[l][i].pressed )
 			{
@@ -164,7 +168,7 @@ void LevelOptions::drawSlider(const Slider &slider) const
 	const std::string sliderValue = "Depth: " + std::to_string(slider.value);
 	const Vector2 sliderPos = slider.getPos();
 	const Vector2 sliderSize = slider.getSize();
-	drawText(sliderValue, {sliderPos.x, sliderPos.y + sliderSize.y + 0.01f},30.0f);
+	Raylib::drawText(sliderValue, {sliderPos.x, sliderPos.y + sliderSize.y + 0.01f},30.0f);
 }
 
 void LevelOptions::drawTitle() const
@@ -173,8 +177,8 @@ void LevelOptions::drawTitle() const
 	static const Vector2 sliderWhitePos = sliderDepthWhite.getPos();
 	static const Vector2 sliderBlackPos = sliderDepthBlack.getPos();
 
-	drawText("White Bot", {sliderWhitePos.x, sliderWhitePos.y - 0.1f}, fontTitle);
-	drawText("Black Bot", {sliderBlackPos.x, sliderBlackPos.y - 0.1f}, fontTitle);
+	Raylib::drawText("White Bot", {sliderWhitePos.x, sliderWhitePos.y - 0.1f}, fontTitle);
+	Raylib::drawText("Black Bot", {sliderBlackPos.x, sliderBlackPos.y - 0.1f}, fontTitle);
 }
 
 void LevelOptions::drawButtons() const
@@ -214,22 +218,22 @@ void LevelOptions::drawInfoSquare(Chess::BotTypes botType) const
 			break;
 
 		case WEIGHTEDRANDOMBOT1:
-			title = "WEIGHTED RANDOM BOT 1";
+			title = "FOOL BOT";
 			text = "Chooses a chesspiece at random,\nthen chooses a random move based\non their weights.";
 			break;
 
 		case WEIGHTEDRANDOMBOT2:
-			title = "WEIGHTED RANDOM BOT 2";
+			title = "JESTER BOT";
 			text = "Chooses a random chesspiece and\nmove based on their weights.";
 			break;
 
 		case OPTIMUMBOT1:
-			title = "OPTIMUM BOT 1";
+			title = "NOVICE BOT";
 			text = "Chooses a chesspiece at random,\nthen picks the best move.";
 			break;
 
 		case OPTIMUMBOT2:
-			title = "OPTIMUM BOT 2";
+			title = "MASTER BOT";
 			text = "Chooses the best move available.";
 			break;
 		}
@@ -237,7 +241,7 @@ void LevelOptions::drawInfoSquare(Chess::BotTypes botType) const
 		const Vector2 titleSize = Raylib::getTextSize(title,50.0f,0.1f);
 		constexpr float d = 0.01f;
 
-		drawText(title,{0.5f - 0.5f*titleSize.x, rect.y + d},50.0f);
-		drawText(text,{rect.x + d, rect.y + titleSize.y + 5.0f*d},35.0f);
+		Raylib::drawText(title,{0.5f - 0.5f*titleSize.x, rect.y + d},50.0f);
+		Raylib::drawText(text,{rect.x + d, rect.y + titleSize.y + 5.0f*d},35.0f);
 	}
 }
