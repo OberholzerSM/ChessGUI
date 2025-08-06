@@ -373,6 +373,9 @@ public:
     //Get the Weight of the board if you were to execute move.
     int getUpdatedBoardWeight(const ChessMove &move) const;
 
+    //Get the estimated weight for a move with a given depth.
+    int getMoveWeight(int depth, const ChessMove &move) const;
+
     //Advance the Turn for Weight calculations without calculating legal moves.
     void advancePseudoTurn();
 
@@ -495,18 +498,16 @@ public:
 class Chess::Bot
 {
 public:
-    Bot(PColour colour): botColour{colour}
-    {
-        testEngine->initialize();
-    }
+    Bot(PColour colour): botColour{colour}{ updateThreadSize(); }
 
     const PColour botColour;
     BotTypes botType = OPTIMUMBOT2;
-    int depth = 5;
+    int depth = 5, nThreadsBot = 1;
     ChessMove nextMove{};
+    std::vector<ChessMove> nextMoveList{  };
+    std::vector<int> nextMoveWeightList{};
     bool spriteMoved = false, spriteArrived = false;
     std::atomic<bool> searching{false}, moveChosen{false};
-    std::unique_ptr<Engine> testEngine{std::make_unique<Engine>()};
 
     //Set the move depending on the bottype and store it in nextMove.
     void generateMove();
@@ -516,6 +517,9 @@ public:
 
     //Reset all Variables.
     void reset();
+
+    //Adjust ThreadSize.
+    void updateThreadSize();
 
 private:
 
@@ -534,17 +538,23 @@ private:
     //Pick a weighted random piece and move.
     void generateMoveWeightedRandomBot2();
 
+    //Get the weight of a move via a thread.
+    void setMoveWeightThread(const ChessMove &move, std::size_t threadID);
+
     //Pick a random piece and its best move.
     void generateMoveOptimumBot1();
 
     //Pick the best piece and move.
     void generateMoveOptimumBot2();
 
+    //Distribute the moves among Threads and find the best move.
+    void findOptimumMove(const std::vector<ChessMove> &moveList);
+
     //Find the Move with the max weight.
-    void findMaxMove(std::vector<ChessMove> &moveList);
+    void findMaxMove(std::vector<ChessMove> moveList, std::size_t threadID);
 
     //Find the Move with the min weight.
-    void findMinMove(std::vector<ChessMove> &moveList);
+    void findMinMove(std::vector<ChessMove> moveList, std::size_t threadID);
 };
 
 namespace Chess
@@ -555,9 +565,6 @@ namespace Chess
     void initialize();
 
     //Weight Calculations
-
-    //Get the estimated weight for a move with a given depth.
-    int getMoveWeight(int depth, const ChessMove &move, std::unique_ptr<Engine> &engine);
 
     //Takes a moveList and sorts the Moves from large to small.
     void sortMovesMaxtoMin(std::vector<ChessMove> &moveList, std::unique_ptr<Engine> &engine);
@@ -580,12 +587,11 @@ namespace Chess
     void stopAllThreads();
 
     //Thread Variables
-    inline int nThreads = 1;
-    //int nThreads = std::thread::hardware_concurrency();   //Number of Threads to be used for calculations.
-    inline std::atomic<bool> stopThread{false};		        //Shared flag to signal all threads to stop.
-    inline std::vector<std::thread> threadList{};		    //List of all threads currently running.
-    inline std::vector<bool> threadDone{};				    //List of bools to signal if a Thread has finished.
-    inline std::mutex mtx, mtx2, mtx3;		                //Mutex-Locks to safely access thread-Variables.
+    inline int nThreads = std::thread::hardware_concurrency();  //How many Threads should be used.
+    inline std::atomic<bool> stopThread{false};		            //Shared flag to signal all threads to stop.
+    inline std::vector<std::thread> threadList{};		        //List of all threads currently running.
+    inline std::vector<bool> threadDone{};				        //List of bools to signal if a Thread has finished.
+    inline std::mutex mtx, mtx2, mtx3;		                    //Mutex-Locks to safely access thread-Variables.
 
     //Bots
     inline Bot botList[2]{ PWHITE,PBLACK };
