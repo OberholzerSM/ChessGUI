@@ -550,11 +550,8 @@ private:
     //Distribute the moves among Threads and find the best move.
     void findOptimumMove(const std::vector<ChessMove> &moveList);
 
-    //Find the Move with the max weight.
-    void findMaxMove(std::vector<ChessMove> moveList, std::size_t threadID);
-
-    //Find the Move with the min weight.
-    void findMinMove(std::vector<ChessMove> moveList, std::size_t threadID);
+    //Find the best Move according to negamax.
+    void findNegamaxMove(std::vector<ChessMove> moveList, std::size_t threadID);
 };
 
 namespace Chess
@@ -572,11 +569,8 @@ namespace Chess
     //Takes a moveList and sorts the Moves from small to large.
     void sortMovesMintoMax(std::vector<ChessMove> &moveList, std::unique_ptr<Engine> &engine);
 
-    //Find the weight of the move that maximizes the board weight.
-    int maxAlphaBetaWeight(int depth, const int maxDepth, int alpha, int beta, const std::vector<ChessMove> &moveList, std::unique_ptr<Engine> &engine);
-
-    //Find the weight of the move that minimizes the board weight.
-    int minAlphaBetaWeight(int depth, const int maxDepth, int alpha, int beta, const std::vector<ChessMove> &moveList, std::unique_ptr<Engine> &engine);
+    //Negamax search.
+    int negamax(int depth, const int maxDepth, int alpha, int beta, const std::vector<ChessMove> &moveList, std::unique_ptr<Engine> &engine);
 
     //Thread Functions
 

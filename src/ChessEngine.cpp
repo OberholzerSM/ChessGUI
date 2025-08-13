@@ -1834,12 +1834,7 @@ int Engine::getMoveWeight(int depth, const ChessMove &move) const
     engine->turnCounter = 0;
     engine->saveBoardState(0);
 
-    if(mainEngine.turnColour == PWHITE)
-        return maxAlphaBetaWeight(depth, depth, -INT_MAX, +INT_MAX, {move}, engine);
-    else if(mainEngine.turnColour == PBLACK)
-        return minAlphaBetaWeight(depth, depth, -INT_MAX, +INT_MAX, {move}, engine);
-    else
-        return mainEngine.getBoardWeight();
+    return -negamax(depth, depth, -INT_MAX, +INT_MAX, {move}, engine);
 }
 
 void Engine::advancePseudoTurn()
@@ -1938,16 +1933,19 @@ void Chess::sortMovesMintoMax(std::vector<ChessMove> &moveList, std::unique_ptr<
     std::sort(moveList.begin(), moveList.end(), sortByWeight);
 }
 
-int Chess::maxAlphaBetaWeight(int depth, const int maxDepth, int alpha, int beta, const std::vector<ChessMove> &moveList, std::unique_ptr<Engine> &engine)
+int Chess::negamax(int depth, const int maxDepth, int alpha, int beta, const std::vector<ChessMove> &moveList, std::unique_ptr<Engine> &engine)
 {
+    const int sign = ((engine->turnColour == PWHITE) ? +1 : -1);
+    const PColour nextTurnColour = ((engine->turnColour == PWHITE) ? PBLACK : PWHITE);
+
     if(depth<=0 || stopThread.load() || engine->turnColour == PNONE)
-        return engine->getBoardWeight();
+        return sign*engine->getBoardWeight();
 
     engine->saveBoardState(engine->turnCounter + maxDepth - depth);
 
-    int max = -INT_MAX;
+    int max = INT_MIN;
 
-    for( const ChessMove &move : moveList )
+    for(const ChessMove &move : moveList)
     {
         if(stopThread.load())
             return max;
@@ -1959,11 +1957,14 @@ int Chess::maxAlphaBetaWeight(int depth, const int maxDepth, int alpha, int beta
             engine->advancePseudoTurn();
 
             std::vector<ChessMove> newMoveList{};
-            newMoveList.assign(engine->moveListPseudo[PBLACK], engine->moveListPseudo[PBLACK] + engine->nMovesPseudo[PBLACK]);
+            newMoveList.assign(engine->moveListPseudo[nextTurnColour], engine->moveListPseudo[nextTurnColour] + engine->nMovesPseudo[nextTurnColour]);
 
-            sortMovesMintoMax(newMoveList,engine);
-          
-            const int weight = minAlphaBetaWeight(depth-1, maxDepth, alpha, beta, newMoveList, engine);
+            if(nextTurnColour == PBLACK)
+                sortMovesMintoMax(newMoveList, engine);
+            else
+                sortMovesMaxtoMin(newMoveList, engine);
+
+            const int weight = -negamax(depth-1, maxDepth, -beta, -alpha, newMoveList, engine);
 
             if(weight > max)
             {
@@ -1980,49 +1981,6 @@ int Chess::maxAlphaBetaWeight(int depth, const int maxDepth, int alpha, int beta
     }
 
     return max;
-}
-
-int Chess::minAlphaBetaWeight(int depth, const int maxDepth, int alpha, int beta, const std::vector<ChessMove> &moveList, std::unique_ptr<Engine> &engine)
-{
-    if(depth<=0 || stopThread.load() || engine->turnColour == PNONE)
-        return engine->getBoardWeight();
-
-    engine->saveBoardState(engine->turnCounter + maxDepth - depth);
-
-    int min = INT_MAX;
-
-    for(const ChessMove &move : moveList)
-    {
-        if(stopThread.load())
-            return min;
-
-        const bool isLegal = engine->makeMove(move);
-
-        if(isLegal)
-        {
-            engine->advancePseudoTurn();
-
-            std::vector<ChessMove> newMoveList{};
-            newMoveList.assign(engine->moveListPseudo[PWHITE], engine->moveListPseudo[PWHITE] + engine->nMovesPseudo[PWHITE]);
-            sortMovesMaxtoMin(newMoveList,engine);
-
-            const int weight = maxAlphaBetaWeight(depth-1, maxDepth, alpha, beta, newMoveList, engine);
-
-            if(weight < min)
-            {
-                min = weight;
-                if(weight < beta)
-                    beta = weight;
-            }
-
-            if(weight <= alpha)
-                return weight;
-        }
-
-        engine->loadTestBoardState(engine->turnCounter + maxDepth - depth);
-    }
-
-    return min;
 }
 
 //Bot-Functions
@@ -2216,7 +2174,8 @@ void Bot::generateMoveWeightedRandomBot1()
             weightedThreadList[n].join();
             mtx.lock();
             int moveWeight = sign*nextMoveWeightList[n];
-            weightList[m-nWeightThreads+n] = moveWeight;
+            std::size_t index = static_cast<std::size_t>(m-nWeightThreads+n);
+            weightList[index] = moveWeight;
             mtx.unlock();
 
             //Determine min and max weight for later.
@@ -2310,7 +2269,8 @@ void Bot::generateMoveWeightedRandomBot2()
             weightedThreadList[n].join();
             mtx.lock();
             int moveWeight = sign*nextMoveWeightList[n];
-            weightList[m-nWeightThreads+n] = moveWeight;
+            std::size_t index = static_cast<std::size_t>(m-nWeightThreads+n);
+            weightList[index] = moveWeight;
             mtx.unlock();
 
             //Determine min and max weight for later.
@@ -2399,14 +2359,8 @@ void Bot::findOptimumMove(const std::vector<ChessMove> &moveList)
     const int nMoves = (int)moveList.size();
     if( nThreadsBot == 1 || nMoves < nThreadsBot )
     {
-        //Find the best Move.
-        if(botColour == PWHITE)
-            findMaxMove(moveList, 0);
-        else
-            findMinMove(moveList, 0);
-
+        findNegamaxMove(moveList, 0);
         nextMove = nextMoveList[0];
-
         return;
     }
 
@@ -2439,11 +2393,7 @@ void Bot::findOptimumMove(const std::vector<ChessMove> &moveList)
         {
             [this,moveListThread,n]()
             {
-                //Find the best Move.
-                if(botColour == PWHITE)
-                    findMaxMove(moveListThread,n);
-                else
-                    findMinMove(moveListThread,n);
+                findNegamaxMove(moveListThread,n);
             }
         };
 
@@ -2473,7 +2423,7 @@ void Bot::findOptimumMove(const std::vector<ChessMove> &moveList)
     mtx.unlock();
 }
 
-void Bot::findMaxMove(std::vector<ChessMove> moveList, std::size_t threadID)
+void Bot::findNegamaxMove(std::vector<ChessMove> moveList, std::size_t threadID)
 {
     //Initalize the board to perform the search on (necessary when using threads).
     auto testEngine = std::make_unique<Engine>();
@@ -2482,10 +2432,16 @@ void Bot::findMaxMove(std::vector<ChessMove> moveList, std::size_t threadID)
     testEngine->turnCounter = 0;
     testEngine->saveBoardState(0);
 
-    int alpha = -INT_MAX;
-    constexpr int beta = +INT_MAX;
-    int maxWeight = -INT_MAX;
-    sortMovesMaxtoMin(moveList, testEngine);
+    int alpha = -INT_MAX;           //-INT_MAX, since otherwise alpha-1 would lead to underflow.
+    constexpr int beta = INT_MAX;
+    int maxWeight = INT_MIN;
+    const PColour nextTurnColour = ((testEngine->turnColour == PWHITE) ? PBLACK : PWHITE);
+
+    if(testEngine->turnColour==PWHITE)
+        sortMovesMaxtoMin(moveList, testEngine);
+    else
+        sortMovesMintoMax(moveList, testEngine);
+
     mtx.lock();
     nextMoveList[threadID] = moveList[0];
     nextMoveWeightList[threadID] = maxWeight;
@@ -2503,10 +2459,14 @@ void Bot::findMaxMove(std::vector<ChessMove> moveList, std::size_t threadID)
         testEngine->advancePseudoTurn();
 
         std::vector<ChessMove> newMoveList{};
-        newMoveList.assign(testEngine->moveListPseudo[PBLACK], testEngine->moveListPseudo[PBLACK] + testEngine->nMovesPseudo[PBLACK]);
-        sortMovesMintoMax(newMoveList, testEngine);
+        newMoveList.assign(testEngine->moveListPseudo[nextTurnColour], testEngine->moveListPseudo[nextTurnColour] + testEngine->nMovesPseudo[nextTurnColour]);
 
-        const int weight = minAlphaBetaWeight(depth-1, depth, alpha, beta, newMoveList, testEngine);
+        if(nextTurnColour == PBLACK)
+            sortMovesMintoMax(newMoveList, testEngine);
+        else
+            sortMovesMaxtoMin(newMoveList, testEngine);
+
+        const int weight = -negamax(depth-1, depth, -beta, -alpha, newMoveList, testEngine);
 
         if(weight > maxWeight)
         {
@@ -2517,56 +2477,6 @@ void Bot::findMaxMove(std::vector<ChessMove> moveList, std::size_t threadID)
             maxWeight = weight;
             if(weight > alpha)
                 alpha = weight;
-        }
-
-        testEngine->loadTestBoardState(testEngine->turnCounter);
-    }
-}
-
-void Bot::findMinMove(std::vector<ChessMove> moveList, std::size_t threadID)
-{
-    //Initalize the board to perform the search on (necessary when using threads).
-    auto testEngine = std::make_unique<Engine>();
-    testEngine->initialize();
-    testEngine->loadFEN(mainEngine.getFEN().c_str());
-    testEngine->turnCounter = 0;
-    testEngine->saveBoardState(0);
-
-    constexpr int alpha = -INT_MAX;
-    int beta = +INT_MAX;
-    int minWeight = +INT_MAX;
-    sortMovesMintoMax(moveList, testEngine);
-    mtx.lock();
-    nextMoveList[threadID] = moveList[0];
-    nextMoveWeightList[threadID] = minWeight;
-    mtx.unlock();
-
-    if(depth <= 0)
-        return;
-
-    for(const ChessMove &move : moveList)
-    {
-        if(stopThread.load())
-            break;
-
-        testEngine->makeMove(move);
-        testEngine->advancePseudoTurn();
-
-        std::vector<ChessMove> newMoveList{};
-        newMoveList.assign(testEngine->moveListPseudo[PWHITE], testEngine->moveListPseudo[PWHITE] + testEngine->nMovesPseudo[PWHITE]);
-        sortMovesMaxtoMin(newMoveList, testEngine);
-
-        const int weight = maxAlphaBetaWeight(depth-1, depth, alpha, beta, newMoveList, testEngine);
-
-        if(weight < minWeight)
-        {
-            mtx.lock();
-            nextMoveList[threadID] = move;
-            nextMoveWeightList[threadID] = weight;
-            mtx.unlock();
-            minWeight = weight;
-            if(weight < beta)
-                beta = weight;
         }
 
         testEngine->loadTestBoardState(testEngine->turnCounter);
