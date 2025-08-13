@@ -999,8 +999,15 @@ void LevelChessboard::drawTurnCounter() const
 
 	if(paused)
 	{
-		drawText("Game paused.\nPress Space to continue.", {textPos.x, squareSize.y}, 18.0f);
+		drawText("Game paused.\nPress Space to continue.", {textPos.x, 0.875f*squareSize.y}, 18.0f);
 	}
+
+	//Draw the Board-Score.
+	const int score = mainEngine.getBoardWeight();
+	text = "Score: ";
+	text += std::to_string(score);
+	textPos = {(8.0f + 1.0f/16.0f)*squareSize.x, 1.25f*squareSize.y};
+	drawText(text, textPos, 35.0f);
 }
 
 void LevelChessboard::drawChessPiece(const Chess::ChessPiece *piece) const
