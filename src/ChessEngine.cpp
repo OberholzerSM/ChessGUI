@@ -2402,13 +2402,12 @@ void Bot::findOptimumMove(const std::vector<ChessMove> &moveList)
     }
 
     //Wait for all threads to finish and find the move with the best weight.
-    const int sign = (botColour == PWHITE) ? +1 : -1;
-    int maxWeight = -INT_MAX, indexMaxWeight = 0;
+    int maxWeight = INT_MIN, indexMaxWeight = 0;
     for(int n=0; n<nThreadsBot; n++)
     {
         optimumThreadList[n].join();
         mtx.lock();
-        const int weight = sign*nextMoveWeightList[n];
+        const int weight = nextMoveWeightList[n];
         mtx.unlock();
         if(weight > maxWeight)
         {
