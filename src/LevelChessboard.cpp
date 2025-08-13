@@ -1006,7 +1006,8 @@ void LevelChessboard::drawTurnCounter() const
 	const int score = mainEngine.getBoardWeight();
 	text = "Score: ";
 	text += std::to_string(score);
-	textPos = {(8.0f + 1.0f/16.0f)*squareSize.x, 1.25f*squareSize.y};
+	static const float textHeight = Raylib::getTextSize(text, 35.0f, 1.0f).y;
+	textPos = {(8.0f + 1.0f/16.0f)*squareSize.x, 1.5f*squareSize.y - 0.5f*textHeight};
 	drawText(text, textPos, 35.0f);
 }
 
