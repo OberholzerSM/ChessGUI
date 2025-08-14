@@ -658,7 +658,7 @@ void Engine::saveBoardState(std::size_t position)
     //Increase size if necessary
     if(position >= boardStateListSize)
     {
-        boardStateListSize += 200;
+        boardStateListSize += position + 200;
         boardStateList.resize(boardStateListSize);
     }
 
@@ -1594,8 +1594,7 @@ void Engine::loadFEN(const char *FEN)
         maxTurns = turnCounter;
     }
 
-    updateMovement();
-    saveBoardState(turnCounter);
+    updatePseudoLegalMovement();
 }
 
 std::string Engine::getFEN() const
@@ -2101,7 +2100,12 @@ void Bot::generateMoveMetropolisBot()
             break;
 
         //Get the weight and switch the sign such that its from the bots perspective
-        int weightNew = sign * mainEngine.getMoveWeight(depth, nextMove);
+        int weightNew;
+        //For even depths, weights tend to be small, resulting in long runtimes.
+        if(depth%2 == 0)
+            weightNew = sign * mainEngine.getMoveWeight(depth+1, nextMove);
+        else
+            weightNew = sign * mainEngine.getMoveWeight(depth, nextMove);
 
         //Ensure Weights are positive and nonzero.
         const int minValue = abs(std::min(weightOld, weightNew));
