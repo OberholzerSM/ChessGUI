@@ -440,14 +440,14 @@ void LevelChessboard::commentValidMoves(int weightOld)
 	const int sign = (turnColour == PWHITE ? -1 : +1 );
 	const int dw = sign*(mainEngine.getBoardWeight() - weightOld);
 
-	if(dw >= pieceValue[QUEEN])
+	if(dw >= pieceValue[mainEngine.lateGame][QUEEN])
 	{
 		if(turnColour==PWHITE)
 			speak("Gasp!", king);
 		else if(turnColour==PBLACK)
 			speak("Impossible!", king);
 	}
-	else if(dw >= pieceValue[PAWN] )
+	else if(dw >= pieceValue[mainEngine.lateGame][PAWN] )
 	{
 		switch(dialogueCounter)
 		{

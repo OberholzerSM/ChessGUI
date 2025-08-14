@@ -1701,31 +1701,22 @@ int Engine::getPositionWeight(const BoardPos &pos, PType type, PColour colour) c
     switch(type)
     {
     case KING:
-        if(lateGame)
-            return KingEndPST[i][j];
-        else
-            return KingMiddlePST[i][j];
-        break;
+        return KingPST[lateGame][i][j];
 
     case QUEEN:
-        return QueenPST[i][j];
-        break;
+        return QueenPST[lateGame][i][j];
 
     case BISHOP:
-        return BishopPST[i][j];
-        break;
+        return BishopPST[lateGame][i][j];
 
     case KNIGHT:
-        return KnightPST[i][j];
-        break;
+        return KnightPST[lateGame][i][j];
 
     case ROOK:
-        return RookPST[i][j];
-        break;
+        return RookPST[lateGame][i][j];
 
     case PAWN:
-        return PawnPST[i][j];
-        break;
+        return PawnPST[lateGame][i][j];
     }
     return 0;
 }
@@ -1746,13 +1737,13 @@ int Engine::getBoardWeight() const
         {
             const ChessPiece *piece = piecesList[l][k];
             if(piece->alive)
-                weight += sign * ( getPositionWeight(piece->pos, piece->type, piece->colour) + pieceValue[piece->type] );
+                weight += sign * ( getPositionWeight(piece->pos, piece->type, piece->colour) + pieceValue[lateGame][piece->type] );
         }
 
         //Add the Kings value if there is a checkmate.
         if(checkmate[l])
         {
-            weight -= sign*pieceValue[KING];
+            weight -= sign*pieceValue[lateGame][KING];
         }
     }
 
@@ -1785,20 +1776,20 @@ int Engine::getUpdatedBoardWeight(const ChessMove &move) const
     //Update Capture
     if(capturedPiece != nullptr)
     {
-        newBoardWeight += sign * (pieceValue[capturedPiece->type] + getPositionWeight(end, capturedPiece->type, capturedPiece->colour));
+        newBoardWeight += sign * (pieceValue[lateGame][capturedPiece->type] + getPositionWeight(end, capturedPiece->type, capturedPiece->colour));
     }
     else if(piece->type == PAWN) //en-passant
     {
         if(end.i - start.i == 1)
         {
             const ChessPiece *enpassantPiece = board[start.i+1][start.j];
-            newBoardWeight += sign * (pieceValue[enpassantPiece->type] + getPositionWeight({start.i+1,start.j}, enpassantPiece->type, enpassantPiece->colour));
+            newBoardWeight += sign * (pieceValue[lateGame][enpassantPiece->type] + getPositionWeight({start.i+1,start.j}, enpassantPiece->type, enpassantPiece->colour));
         }
 
         if(end.i - start.i == -1)
         {
             const ChessPiece *enpassantPiece = board[start.i-1][start.j];
-            newBoardWeight += sign * (pieceValue[enpassantPiece->type] + getPositionWeight({start.i-1,start.j}, enpassantPiece->type, enpassantPiece->colour));
+            newBoardWeight += sign * (pieceValue[lateGame][enpassantPiece->type] + getPositionWeight({start.i-1,start.j}, enpassantPiece->type, enpassantPiece->colour));
         }
     }
 
@@ -1819,7 +1810,7 @@ int Engine::getUpdatedBoardWeight(const ChessMove &move) const
     //Pawn-Transform
     if(piece->type == PAWN && (end.j == 0 || end.j == 7))
     {
-        newBoardWeight += sign * (pieceValue[endType] - pieceValue[PAWN]);
+        newBoardWeight += sign * (pieceValue[lateGame][endType] - pieceValue[lateGame][PAWN]);
     }
 
     return newBoardWeight;
