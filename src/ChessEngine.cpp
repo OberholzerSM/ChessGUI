@@ -1732,12 +1732,70 @@ int Engine::getBoardWeight() const
     {
         const int sign = ((l==PWHITE) ? +1 : -1);
 
-        //Add the PST- and piece-values.
         for(int k=0; k<nPieces; k++)
         {
             const ChessPiece *piece = piecesList[l][k];
             if(piece->alive)
+            {
+                //Add the PST- and piece-values.
                 weight += sign * ( getPositionWeight(piece->pos, piece->type, piece->colour) + pieceValue[lateGame][piece->type] );
+
+                if(piece->type == PAWN)
+                {
+                    //Blocked Pawn
+                    if(piece->nMovesPseudo == 0)
+                        weight += sign * PawnBlocked[lateGame];
+
+                    //Doubled and Isolated Pawns
+                    int nPawns = 0;
+                    bool isolated = true;
+                    const int i = piece->pos.i;
+                    for(int j=1; j<7; j++)
+                    {
+                        if(board[i][j] != nullptr && board[i][j]->type == PAWN && board[i][j]->colour == piece->colour)
+                            ++nPawns;
+
+                        if(i > 0 && board[i-1][j] != nullptr && board[i-1][j]->type == PAWN && board[i-1][j]->colour == piece->colour)
+                            isolated = false;
+
+                        if(i < 7 && board[i+1][j] != nullptr && board[i+1][j]->type == PAWN && board[i+1][j]->colour == piece->colour)
+                            isolated = false;
+                    }
+
+                    if(nPawns > 1)
+                        weight += sign * PawnDoubled[lateGame];
+
+                    if(isolated)
+                        weight += sign * PawnIsolated[lateGame];
+                }
+                else
+                {
+                    //Add mobility score
+                    const int nMoves = piece->nMovesPseudo;
+                    switch(piece->type)
+                    {
+                    case KING:
+                        weight += sign * KingMobility[lateGame][nMoves];
+                        break;
+
+                    case QUEEN:
+                        weight += sign * QueenMobility[lateGame][nMoves];
+                        break;
+
+                    case BISHOP:
+                        weight += sign * BishopMobility[lateGame][nMoves];
+                        break;
+
+                    case KNIGHT:
+                        weight += sign * KnightMobility[lateGame][nMoves];
+                        break;
+
+                    case ROOK:
+                        weight += sign * RookMobility[lateGame][nMoves];
+                        break;
+                    }
+                }
+            }
         }
 
         //Add the Kings value if there is a checkmate.

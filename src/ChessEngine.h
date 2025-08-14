@@ -227,8 +227,46 @@ namespace Chess
         }
     };
 
-    //Piece-Values
+    //Piece-Values KING,QUEEN,BISHOP,KNIGHT,ROOK,PAWN
     constexpr int pieceValue[2][6] = {{20000,900,330,320,500,100},{20000,900,330,320,500,100}};
+
+    //Mobility Score.
+
+    constexpr int RookMobility[2][15] = 
+    {
+        {0,10,10,10,10,10,10,10,10,10,10,10,10,10,10}, 
+        {0,10,10,10,10,10,10,10,10,10,10,10,10,10,10}
+    };
+    
+    constexpr int KnightMobility[2][9] = 
+    {
+        {0,10,10,10,10,10,10,10,10}, 
+        {0,10,10,10,10,10,10,10,10,}
+    };
+
+    constexpr int BishopMobility[2][14] = 
+    {
+        {0,10,10,10,10,10,10,10,10,10,10,10,10,10}, 
+        {0,10,10,10,10,10,10,10,10,10,10,10,10,10}
+    };
+
+    constexpr int QueenMobility[2][28] = 
+    {
+        {0,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10},
+        {0,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10}
+    };
+
+    constexpr int KingMobility[2][9] =
+    {
+        {0,10,10,10,10,10,10,10,10},
+        {0,10,10,10,10,10,10,10,10}
+    };
+
+    //Pawn Score.
+
+    constexpr int PawnDoubled[2] = {-50,-50};   //Doubled Pawn:  Two friendly Pawns on the same file.
+    constexpr int PawnIsolated[2] = {-50,-50};  //Isolated Pawn: No friendly Pawns on the neighbouring files.
+    constexpr int PawnBlocked[2] = {-50,-50};   //Blocked Pawn:  Pawn cannot move.
 }
 
 //Class representing a single Chesspiece.
@@ -581,6 +619,9 @@ public:
     //Adjust ThreadSize.
     void updateThreadSize();
 
+    //Distribute the moves among Threads and find the best move.
+    void findOptimumMove(const std::vector<ChessMove> &moveList);
+
 private:
 
     //Return the index of a random piece from piecesListAvailable.
@@ -606,9 +647,6 @@ private:
 
     //Pick the best piece and move.
     void generateMoveOptimumBot2();
-
-    //Distribute the moves among Threads and find the best move.
-    void findOptimumMove(const std::vector<ChessMove> &moveList);
 
     //Find the best Move according to negamax.
     void findNegamaxMove(std::vector<ChessMove> moveList, std::size_t threadID);
