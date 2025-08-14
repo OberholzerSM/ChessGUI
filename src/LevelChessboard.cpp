@@ -701,6 +701,8 @@ void LevelChessboard::inputMouse()
 			//Move the Sprite with the Mouse
 			piece->drawX = ((float)(GetMouseX()) / Window.widthf) - 0.5f*squareSize.x;
 			piece->drawY = ((float)(GetMouseY()) / Window.heightf)  - 0.5f*squareSize.y;
+			piece->drawDestinationX = piece->drawX;
+			piece->drawDestinationY = piece->drawY;
 		}
 	}
 	else if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
