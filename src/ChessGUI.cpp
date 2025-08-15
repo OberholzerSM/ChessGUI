@@ -38,7 +38,7 @@ void loadGame()
 	Resources::load();
 	speechbubble.load();
 
-	mainEngine.initialize();
+	Chess::initialize();
 	LevelID = levelStartMenu.ID(); //ID of the Startscreen
 	levelStartMenu.load(); //Load the Startscreen last.
 }
