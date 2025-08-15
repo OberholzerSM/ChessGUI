@@ -476,7 +476,7 @@ void LevelChessboard::commentValidMoves(int weightOld)
 			break;
 		}
 	}
-	else if(dw < 0)
+	else if(dw < -pieceValue[mainEngine.lateGame][PAWN]/4)
 	{
 		switch(dialogueCounter)
 		{
