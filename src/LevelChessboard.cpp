@@ -447,7 +447,7 @@ void LevelChessboard::commentValidMoves(int weightOld)
 		else if(turnColour==PBLACK)
 			speak("Impossible!", king);
 	}
-	else if(dw >= pieceValue[mainEngine.lateGame][PAWN] )
+	else if( mainEngine.nAlive < mainEngine.boardStateList[mainEngine.turnCounter-1].nAlive )
 	{
 		switch(dialogueCounter)
 		{
@@ -476,7 +476,7 @@ void LevelChessboard::commentValidMoves(int weightOld)
 			break;
 		}
 	}
-	else if(dw < -pieceValue[mainEngine.lateGame][PAWN]/4)
+	else if(dw < -pieceValue[mainEngine.lateGame][PAWN]/2)
 	{
 		switch(dialogueCounter)
 		{
