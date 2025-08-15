@@ -234,32 +234,32 @@ namespace Chess
 
     constexpr int RookMobility[2][15] = 
     {
-        {0,10,10,10,10,10,10,10,10,10,10,10,10,10,10}, 
-        {0,10,10,10,10,10,10,10,10,10,10,10,10,10,10}
+        {0,10,20,30,40,50,60,70,80,90,100,110,120,130,140}, 
+        {0,10,20,30,40,50,60,70,80,90,100,110,120,130,140}
     };
     
     constexpr int KnightMobility[2][9] = 
     {
-        {0,10,10,10,10,10,10,10,10}, 
-        {0,10,10,10,10,10,10,10,10,}
+        {0,10,20,30,40,50,60,70,80},
+        {0,10,20,30,40,50,60,70,80}
     };
 
     constexpr int BishopMobility[2][14] = 
     {
-        {0,10,10,10,10,10,10,10,10,10,10,10,10,10}, 
-        {0,10,10,10,10,10,10,10,10,10,10,10,10,10}
+        {0,10,20,30,40,50,60,70,80,90,100,110,120,130},
+        {0,10,20,30,40,50,60,70,80,90,100,110,120,130}
     };
 
     constexpr int QueenMobility[2][28] = 
     {
-        {0,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10},
-        {0,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10}
+        {0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,260,270},
+        {0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,260,270}
     };
 
     constexpr int KingMobility[2][9] =
     {
-        {0,10,10,10,10,10,10,10,10},
-        {0,10,10,10,10,10,10,10,10}
+        {0,10,20,30,40,50,60,70,80},
+        {0,10,20,30,40,50,60,70,80}
     };
 
     //Pawn Score.
@@ -668,7 +668,7 @@ namespace Chess
     void sortMovesMintoMax(std::vector<ChessMove> &moveList, std::unique_ptr<Engine> &engine);
 
     //Negamax search.
-    int negamax(int depth, const int maxDepth, int alpha, int beta, const std::vector<ChessMove> &moveList, std::unique_ptr<Engine> &engine);
+    int negamax(int depth, int saveCounter, int alpha, int beta, const std::vector<ChessMove> &moveList, std::unique_ptr<Engine> &engine);
 
     //Thread Functions
 
@@ -679,6 +679,7 @@ namespace Chess
     void stopAllThreads();
 
     //Thread Variables
+    //inline int nThreads = 1;
     inline int nThreads = std::thread::hardware_concurrency();  //How many Threads should be used.
     inline std::atomic<bool> stopThread{false};		            //Shared flag to signal all threads to stop.
     inline std::vector<std::thread> threadList{};		        //List of all threads currently running.
