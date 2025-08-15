@@ -447,7 +447,7 @@ void LevelChessboard::commentValidMoves(int weightOld)
 		else if(turnColour==PBLACK)
 			speak("Impossible!", king);
 	}
-	else if( mainEngine.nAlive < mainEngine.boardStateList[mainEngine.turnCounter-1].nAlive )
+	else if(turnColour < PNONE && mainEngine.turnCounter > 0 && mainEngine.nAlive[mainEngine.turnColour] < mainEngine.boardStateList[mainEngine.turnCounter-1].nAlive[mainEngine.turnColour])
 	{
 		switch(dialogueCounter)
 		{
