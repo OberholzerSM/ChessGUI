@@ -12,6 +12,7 @@ void LevelChessboard::load()
 	//Switch the currently active level.
 	LevelID = this->ID();
 	ColorBackground = DARKGRAY;
+	stopThread.store(false);
 
 	if(!loaded)
 	{
@@ -84,6 +85,7 @@ void LevelChessboard::unload()
 	if(loaded)
 	{
 		resetBots();
+		stopThread.store(true);
 		loaded = false;
 	}
 }
