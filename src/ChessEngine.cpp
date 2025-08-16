@@ -2163,9 +2163,9 @@ void Bot::generateMoveMetropolisBot()
         int weightNew;
         //For even depths, weights tend to be small, resulting in long runtimes.
         if(depth%2 == 0)
-            weightNew = sign * mainEngine.getMoveWeight(depth+1, nextMove);
+            weightNew = mainEngine.getMoveWeight(depth+1, nextMove);
         else
-            weightNew = sign * mainEngine.getMoveWeight(depth, nextMove);
+            weightNew = mainEngine.getMoveWeight(depth, nextMove);
 
         //Ensure Weights are positive and nonzero.
         const int minValue = abs(std::min(weightOld, weightNew));
@@ -2192,7 +2192,6 @@ void Bot::generateMoveMetropolisBot()
 
 void Bot::generateMoveWeightedRandomBot1()
 {
-    const int sign = (botColour == PWHITE) ? +1 : -1;
     const ChessPiece *piece = mainEngine.piecesListAvailable[botColour][chooseRandomPiece()];
     const int nMoves = piece->nMoves;
     int movesLeft = nMoves;
@@ -2237,7 +2236,7 @@ void Bot::generateMoveWeightedRandomBot1()
         {
             weightedThreadList[n].join();
             mtx.lock();
-            int moveWeight = sign*nextMoveWeightList[n];
+            int moveWeight = nextMoveWeightList[n];
             std::size_t index = static_cast<std::size_t>(m-nWeightThreads+n);
             weightList[index] = moveWeight;
             mtx.unlock();
@@ -2288,7 +2287,6 @@ void Bot::generateMoveWeightedRandomBot1()
 
 void Bot::generateMoveWeightedRandomBot2()
 {
-    const int sign = (botColour == PWHITE) ? +1 : -1;
     const int nMoves = mainEngine.nMovesLegal[botColour];
     int movesLeft = nMoves;
     std::vector<int> weightList(nMoves);
@@ -2332,7 +2330,7 @@ void Bot::generateMoveWeightedRandomBot2()
         {
             weightedThreadList[n].join();
             mtx.lock();
-            int moveWeight = sign*nextMoveWeightList[n];
+            int moveWeight = nextMoveWeightList[n];
             std::size_t index = static_cast<std::size_t>(m-nWeightThreads+n);
             weightList[index] = moveWeight;
             mtx.unlock();
@@ -2533,6 +2531,38 @@ void Bot::findNegamaxMove(std::vector<ChessMove> moveList, std::size_t threadID)
             testEngine->isdraw = true;
         }
         
+        //Test manually for Repetitions in a cheap way.
+        mtx2.lock();
+        int nRepetitions = 0;
+        if(testEngine->turnColour != PNONE && mainEngine.turnCounter > 21)
+        {
+            testEngine->saveBoardState(1);
+            for(std::size_t t=mainEngine.turnCounter; t >= mainEngine.turnCounter-20; t--)
+            {
+                for(int i=0; i<8; i++)
+                {
+                    for(int j=0; j<8; j++)
+                    {
+                        const ChessPiece *piece1 = mainEngine.boardStateList[t].board[i][j];
+                        const ChessPiece *piece2 = testEngine->boardStateList[1].board[i][j];
+
+                        if(mainEngine.getPieceLetter(piece1) != mainEngine.getPieceLetter(piece2))
+                            goto exitBoardLoop;
+                    }
+                }
+                ++nRepetitions;
+            exitBoardLoop:
+
+                if(nRepetitions >= 3)
+                {
+                    testEngine->turnColour = PNONE;
+                    testEngine->isdraw = true;
+                    break;
+                }
+            }
+        }
+        mtx2.unlock();
+
         //Determine the Weight
         if(testEngine->turnColour != PNONE)
         {
@@ -2545,6 +2575,7 @@ void Bot::findNegamaxMove(std::vector<ChessMove> moveList, std::size_t threadID)
                 sortMovesMaxtoMin(newMoveList, testEngine);
 
             weight = -negamax(depth-1, 1, -beta, -alpha, newMoveList, testEngine);
+            weight += nRepetitions * RepetitionWeight;
         }
         else
         {
@@ -2555,6 +2586,8 @@ void Bot::findNegamaxMove(std::vector<ChessMove> moveList, std::size_t threadID)
         if(weight > maxWeight)
         {
             mtx.lock();
+            if(testEngine->isdraw)
+                std::cout << weight << '\n';
             nextMoveList[threadID] = move;
             nextMoveWeightList[threadID] = weight;
             mtx.unlock();

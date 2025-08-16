@@ -267,6 +267,9 @@ namespace Chess
     constexpr int PawnDoubled[2] = {-50,-50};   //Doubled Pawn:  Two friendly Pawns on the same file.
     constexpr int PawnIsolated[2] = {-50,-50};  //Isolated Pawn: No friendly Pawns on the neighbouring files.
     constexpr int PawnBlocked[2] = {-50,-50};   //Blocked Pawn:  Pawn cannot move.
+
+    //Repetition Penalty
+    constexpr int RepetitionWeight = -100;
 }
 
 //Class representing a single Chesspiece.
