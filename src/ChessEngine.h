@@ -270,6 +270,9 @@ namespace Chess
 
     //Repetition Penalty
     constexpr int RepetitionWeight = -100;
+
+    //King Safety
+    constexpr int KingCheck[2] = {-2000,-2000};
 }
 
 //Class representing a single Chesspiece.
@@ -682,7 +685,6 @@ namespace Chess
     void stopAllThreads();
 
     //Thread Variables
-    //inline int nThreads = 1;
     inline int nThreads = std::thread::hardware_concurrency();  //How many Threads should be used.
     inline std::atomic<bool> stopThread{false};		            //Shared flag to signal all threads to stop.
     inline std::vector<std::thread> threadList{};		        //List of all threads currently running.

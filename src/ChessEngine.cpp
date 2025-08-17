@@ -1751,30 +1751,30 @@ int Engine::getBoardWeight() const
                     if(piece->nMovesPseudo == 0)
                         weight += sign * PawnBlocked[lateGame];
 
-                    //Doubled and Isolated Pawns (imperfect but faster method).
+                    //Doubled and Isolated Pawns.
                     const int iPiece = piece->pos.i;
-                    const int iLeftNeighbour = (k>8 ? piecesList[l][k-1]->pos.i : -1);
-                    const bool leftNeighbourAlive = (k>8 ? piecesList[l][k-1]->alive : false);
-                    const bool leftNeighbourTransformed = (k>8 ? piecesList[l][k-1]->transformed : true);
-                    const int iRightNeighbour = (k<15 ? piecesList[l][k+1]->pos.i : -1);
-                    const bool rightNeighbourAlive = (k<15 ? piecesList[l][k+1]->alive : false);
-                    const bool rightNeighbourTransformed = (k<15 ? piecesList[l][k+1]->transformed : true);
+                    int nPawnsCenter = 0;
+                    bool coverLeft = false, coverRight = false;
+                    for(int j=1; j<7; j++)
+                    {
+                        if(!coverLeft && iPiece > 0)
+                        {
+                            const ChessPiece *leftPiece = board[iPiece-1][j];
+                            coverLeft = (leftPiece != nullptr && leftPiece->type == PAWN && leftPiece->colour == piece->colour);
+                        }
 
-                    //Check if the right neighbour doubles you.
-                    if(rightNeighbourAlive && !rightNeighbourTransformed && iRightNeighbour == iPiece)
-                        weight += sign * PawnDoubled[lateGame];
+                        if(!coverRight && iPiece < 7)
+                        {
+                            const ChessPiece *rightPiece = board[iPiece+1][j];
+                            coverRight = (rightPiece != nullptr && rightPiece->type == PAWN && rightPiece->colour == piece->colour);
+                        }
 
-                    //Check if the Pawn is covered by its left or right neighbour.
-                    bool leftCover = true, rightCover = true;
+                        const ChessPiece *centerPiece = board[iPiece][j];
+                        if(centerPiece != nullptr && centerPiece->type == PAWN && centerPiece->colour == piece->colour)
+                            ++nPawnsCenter;
+                    }
 
-                    if( !leftNeighbourAlive || leftNeighbourTransformed || k == 8 || (iLeftNeighbour != iPiece - 1 && iLeftNeighbour != iPiece + 1) )
-                        leftCover = false;
-
-                    if( !rightNeighbourAlive || rightNeighbourTransformed || k == 15 || (iRightNeighbour != iPiece - 1 && iRightNeighbour != iPiece + 1) )
-                        rightCover = false;
-
-                    if(!leftCover && !rightCover)
-                        weight += sign * PawnIsolated[lateGame];
+                    weight += sign * ( (nPawnsCenter-1) * PawnDoubled[lateGame] + (!coverLeft && !coverRight) * PawnIsolated[lateGame] );
 
                 }
                 else
@@ -1807,11 +1807,9 @@ int Engine::getBoardWeight() const
             }
         }
 
-        //Add the Kings value if there is a checkmate.
-        if(checkmate[l])
-        {
-            weight -= sign*pieceValue[lateGame][KING];
-        }
+        //Add a penalty if the king is in check.
+        if(piecesList[l][KING]->checkCheck())
+            weight += sign*KingCheck[lateGame];
     }
 
     return weight;
@@ -1892,7 +1890,7 @@ int Engine::getMoveWeight(int depth, const ChessMove &move) const
     engine->turnCounterStart = 0;
     engine->saveBoardState(0);
 
-    return -negamax(depth, 1, -INT_MAX, +INT_MAX, {move}, engine);
+    return negamax(depth, 1, -INT_MAX, +INT_MAX, {move}, engine);
 }
 
 void Engine::advancePseudoTurn()
@@ -2586,8 +2584,6 @@ void Bot::findNegamaxMove(std::vector<ChessMove> moveList, std::size_t threadID)
         if(weight > maxWeight)
         {
             mtx.lock();
-            if(testEngine->isdraw)
-                std::cout << weight << '\n';
             nextMoveList[threadID] = move;
             nextMoveWeightList[threadID] = weight;
             mtx.unlock();
