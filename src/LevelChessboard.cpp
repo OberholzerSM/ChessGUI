@@ -182,7 +182,8 @@ void LevelChessboard::placedownPiece(const Chess::BoardPos &start, const Chess::
 				mainEngine.advanceTurn();
 				mainEngine.updateAttackZone();
 				commentCheck();
-				commentValidMoves(weightOld);
+				if(mainEngine.turnColour != PNONE)
+					commentValidMoves(weightOld);
 
 				if(mainEngine.checkmate[0] || mainEngine.checkmate[1] || mainEngine.isdraw)
 					drawGameOverIsActive = true;
@@ -433,7 +434,7 @@ void LevelChessboard::commentValidMoves(int weightOld)
 	ChessPiece *king = mainEngine.piecesList[turnColour][KING];
 
 	//Increase Dialogue Counter.
-	constexpr int nLines = 3;
+	constexpr int nLines = 4;
 	if( (dialogueCounter % 2) != (int)turnColour )
 		++dialogueCounter;
 	dialogueCounter = ++dialogueCounter % (2*nLines);
@@ -442,14 +443,8 @@ void LevelChessboard::commentValidMoves(int weightOld)
 	const int sign = (turnColour == PWHITE ? -1 : +1 );
 	const int dw = sign*(mainEngine.getBoardWeight() - weightOld);
 
-	if(dw >= pieceValue[mainEngine.lateGame][QUEEN])
-	{
-		if(turnColour==PWHITE)
-			speak("Gasp!", king);
-		else if(turnColour==PBLACK)
-			speak("Impossible!", king);
-	}
-	else if(turnColour < PNONE && mainEngine.turnCounter > 0 && mainEngine.nAlive[mainEngine.turnColour] < mainEngine.boardStateList[mainEngine.turnCounter-1].nAlive[mainEngine.turnColour])
+	//Capture-Dialogue.
+	if(turnColour < PNONE && mainEngine.turnCounter > 0 && mainEngine.nAlive[mainEngine.turnColour] < mainEngine.boardStateList[mainEngine.turnCounter-1].nAlive[mainEngine.turnColour])
 	{
 		switch(dialogueCounter)
 		{
@@ -470,6 +465,14 @@ void LevelChessboard::commentValidMoves(int weightOld)
 			break;
 
 		case 5:
+			speak("Gasp!", king);
+			break;
+
+		case 6:
+			speak("Impossible!", king);
+			break;
+
+		case 7:
 			speak("That was one of my bravest warriors!", king);
 			break;
 
@@ -478,6 +481,7 @@ void LevelChessboard::commentValidMoves(int weightOld)
 			break;
 		}
 	}
+	//Score-Decrease Dialogue.
 	else if(dw < -pieceValue[mainEngine.lateGame][PAWN]/2)
 	{
 		switch(dialogueCounter)
@@ -499,11 +503,19 @@ void LevelChessboard::commentValidMoves(int weightOld)
 			break;
 
 		case 5:
+			speak("Your tactics are... unorthodox.",king);
+			break;
+
+		case 6:
+			speak("What are you planning?!",king);
+			break;
+
+		case 7:
 			speak("Peculiar choice.", king);
 			break;
 
 		case 0:
-			speak("Victory is as good as mine!", king);
+			speak("You play like a jester!", king);
 			break;
 		}
 	}
