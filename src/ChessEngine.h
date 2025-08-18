@@ -474,9 +474,6 @@ public:
     //Get the Weight of the current Board.
     int getBoardWeight() const;
 
-    //Get the Weight of the board if you were to execute move.
-    int getUpdatedBoardWeight(const ChessMove &move) const;
-
     //Get the estimated weight for a move with a given depth.
     int getMoveWeight(int depth, const ChessMove &move) const;
 
@@ -666,12 +663,6 @@ namespace Chess
     void initialize();
 
     //Weight Calculations
-
-    //Takes a moveList and sorts the Moves from large to small.
-    void sortMovesMaxtoMin(std::vector<ChessMove> &moveList, std::unique_ptr<Engine> &engine);
-
-    //Takes a moveList and sorts the Moves from small to large.
-    void sortMovesMintoMax(std::vector<ChessMove> &moveList, std::unique_ptr<Engine> &engine);
 
     //Negamax search.
     int negamax(int depth, int saveCounter, int alpha, int beta, const std::vector<ChessMove> &moveList, std::unique_ptr<Engine> &engine);

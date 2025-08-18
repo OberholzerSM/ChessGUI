@@ -1815,72 +1815,6 @@ int Engine::getBoardWeight() const
     return weight;
 }
 
-int Engine::getUpdatedBoardWeight(const ChessMove &move) const
-{
-    const BoardPos start = move.start, end = move.end;
-    if(start.i==10)
-        return INT_MAX;
-
-    const PType endType = move.endType;
-    const ChessPiece *piece = board[start.i][start.j], *capturedPiece = board[end.i][end.j];
-    if(piece==nullptr)
-    {
-        std::cout << "ERROR getUpdatedBoardWeight: Tried to move nullptr!\n";
-        printMove(move);
-        printChessboard();
-        exit(-1);
-        return INT_MAX;
-    }
-
-    const int sign = (piece->colour == PWHITE) ? +1 : -1;
-    int newBoardWeight = getBoardWeight();
-
-    //Update new Position
-    newBoardWeight += sign * (getPositionWeight(end, move.endType, piece->colour) - getPositionWeight(start, piece->type, piece->colour));
-
-    //Update Capture
-    if(capturedPiece != nullptr)
-    {
-        newBoardWeight += sign * (pieceValue[lateGame][capturedPiece->type] + getPositionWeight(end, capturedPiece->type, capturedPiece->colour));
-    }
-    else if(piece->type == PAWN) //en-passant
-    {
-        if(end.i - start.i == 1)
-        {
-            const ChessPiece *enpassantPiece = board[start.i+1][start.j];
-            newBoardWeight += sign * (pieceValue[lateGame][enpassantPiece->type] + getPositionWeight({start.i+1,start.j}, enpassantPiece->type, enpassantPiece->colour));
-        }
-
-        if(end.i - start.i == -1)
-        {
-            const ChessPiece *enpassantPiece = board[start.i-1][start.j];
-            newBoardWeight += sign * (pieceValue[lateGame][enpassantPiece->type] + getPositionWeight({start.i-1,start.j}, enpassantPiece->type, enpassantPiece->colour));
-        }
-    }
-
-    //Casteling
-    if(piece->type == KING)
-    {
-        if(end.i - start.i == 2)
-        {
-            newBoardWeight += sign * (getPositionWeight({end.i-1,end.j}, ROOK, piece->colour) - getPositionWeight({7,start.j}, ROOK, piece->colour));
-        }
-
-        if(end.i - start.i == -2)
-        {
-            newBoardWeight += sign * (getPositionWeight({end.i+1,end.j}, ROOK, piece->colour) - getPositionWeight({0,start.j}, ROOK, piece->colour));
-        }
-    }
-
-    //Pawn-Transform
-    if(piece->type == PAWN && (end.j == 0 || end.j == 7))
-    {
-        newBoardWeight += sign * (pieceValue[lateGame][endType] - pieceValue[lateGame][PAWN]);
-    }
-
-    return newBoardWeight;
-}
-
 int Engine::getMoveWeight(int depth, const ChessMove &move) const
 {
     //Load the Testengine to do the search on.
@@ -1950,46 +1884,6 @@ void Chess::stopAllThreads()
 
 //Weight Calculations
 
-void Chess::sortMovesMaxtoMin(std::vector<ChessMove> &moveList, std::unique_ptr<Engine> &engine)
-{
-    //Sorting-Lambda for Weights
-    auto sortByWeight
-    {
-        [&engine](ChessMove move1, ChessMove move2)
-        {
-            int weight1 = engine->getUpdatedBoardWeight(move1);
-            int weight2 = engine->getUpdatedBoardWeight(move2);
-
-            if(weight1==INT_MAX)
-                weight1 = -INT_MAX;
-
-            if(weight2==INT_MAX)
-                weight2 = -INT_MAX;
-
-            return weight1 > weight2;
-        }
-    };
-
-    std::sort(moveList.begin(), moveList.end(), sortByWeight);
-}
-
-void Chess::sortMovesMintoMax(std::vector<ChessMove> &moveList, std::unique_ptr<Engine> &engine)
-{
-    //Sorting-Lambda for Weights
-    auto sortByWeight
-    {
-        [&engine](ChessMove move1, ChessMove move2)
-        {
-            int weight1 = engine->getUpdatedBoardWeight(move1);
-            int weight2 = engine->getUpdatedBoardWeight(move2);
-
-            return weight1 < weight2;
-        }
-    };
-
-    std::sort(moveList.begin(), moveList.end(), sortByWeight);
-}
-
 int Chess::negamax(int depth, int saveCounter, int alpha, int beta, const std::vector<ChessMove> &moveList, std::unique_ptr<Engine> &engine)
 {
     const int sign = ((engine->turnColour == PWHITE) ? +1 : -1);
@@ -2001,6 +1895,7 @@ int Chess::negamax(int depth, int saveCounter, int alpha, int beta, const std::v
 
     int max = INT_MIN;
     const PColour nextTurnColour = ((engine->turnColour == PWHITE) ? PBLACK : PWHITE);
+    int legalMoveFound = false;
 
     for(const ChessMove &move : moveList)
     {
@@ -2011,15 +1906,11 @@ int Chess::negamax(int depth, int saveCounter, int alpha, int beta, const std::v
 
         if(isLegal)
         {
+            legalMoveFound = true;
             engine->advancePseudoTurn();
 
             std::vector<ChessMove> newMoveList{};
             newMoveList.assign(engine->moveListPseudo[nextTurnColour], engine->moveListPseudo[nextTurnColour] + engine->nMovesPseudo[nextTurnColour]);
-
-            if(nextTurnColour == PBLACK)
-                sortMovesMintoMax(newMoveList, engine);
-            else
-                sortMovesMaxtoMin(newMoveList, engine);
 
             const int weight = -negamax(depth-1, saveCounter+1, -beta, -alpha, newMoveList, engine);
 
@@ -2037,7 +1928,11 @@ int Chess::negamax(int depth, int saveCounter, int alpha, int beta, const std::v
         engine->loadTestBoardState(engine->turnCounter + saveCounter);
     }
 
-    return max;
+    //If there is a Draw
+    if(!legalMoveFound && !engine->kingWhite.checkCheck() && !engine->kingBlack.checkCheck())
+        return 0;
+    else
+        return max;
 }
 
 //Bot-Functions
@@ -2497,11 +2392,6 @@ void Bot::findNegamaxMove(std::vector<ChessMove> moveList, std::size_t threadID)
     int maxWeight = INT_MIN;
     const PColour nextTurnColour = ((testEngine->turnColour == PWHITE) ? PBLACK : PWHITE);
 
-    if(testEngine->turnColour==PWHITE)
-        sortMovesMaxtoMin(moveList, testEngine);
-    else
-        sortMovesMintoMax(moveList, testEngine);
-
     mtx.lock();
     nextMoveList[threadID] = moveList[0];
     nextMoveWeightList[threadID] = maxWeight;
@@ -2517,19 +2407,10 @@ void Bot::findNegamaxMove(std::vector<ChessMove> moveList, std::size_t threadID)
 
         int weight = 0;
 
-        //Test if the Move would lead to a checkmate or draw.
         testEngine->makeMove(move);
         testEngine->advancePseudoTurn();
-        testEngine->updateLegalMovement();
-        testEngine->checkGameOver();
-
-        if(testEngine->requestDraw)
-        {
-            testEngine->turnColour = PNONE;
-            testEngine->isdraw = true;
-        }
         
-        //Test manually for Repetitions in a cheap way.
+        //Test manually for Repetitions.
         mtx2.lock();
         int nRepetitions = 0;
         if(testEngine->turnColour != PNONE && mainEngine.turnCounter > 21)
@@ -2567,19 +2448,12 @@ void Bot::findNegamaxMove(std::vector<ChessMove> moveList, std::size_t threadID)
             std::vector<ChessMove> newMoveList{};
             newMoveList.assign(testEngine->moveListPseudo[nextTurnColour], testEngine->moveListPseudo[nextTurnColour] + testEngine->nMovesPseudo[nextTurnColour]);
 
-            if(nextTurnColour == PBLACK)
-                sortMovesMintoMax(newMoveList, testEngine);
-            else
-                sortMovesMaxtoMin(newMoveList, testEngine);
-
             weight = -negamax(depth-1, 1, -beta, -alpha, newMoveList, testEngine);
-            weight += nRepetitions * RepetitionWeight;
+            if( weight > INT_MIN + nRepetitions * RepetitionWeight)
+                weight += nRepetitions * RepetitionWeight;
         }
         else
-        {
-            const int sign = (botColour == PWHITE ? +1 : -1);
-            weight = sign * testEngine->getBoardWeight();
-        }
+            weight = 0;
 
         if(weight > maxWeight)
         {
