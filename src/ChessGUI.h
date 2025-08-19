@@ -10,6 +10,8 @@ namespace Resources
     inline RaylibTexture textureSprites{"Chess_Pieces_Sprite.png"};
     inline RaylibTexture arrowTexture{"Arrow.png"};
     inline RaylibTexture cursorTexture{"Cursor.png"};
+    inline RaylibTexture starEmptyTexture{"StarEmpty.png"};
+    inline RaylibTexture starFullTexture{"StarFull.png"};
     inline Vector2 textureSize{}; //Size of textureSprites
 
     inline bool loaded = false;

@@ -22,6 +22,9 @@ void LevelOptions::load()
 		buttonExit.textInsideButton = true;
 		buttonExit.fontSize = fontSize;
 
+		Resources::starEmptyTexture.setSize(starSize);
+		Resources::starFullTexture.setSize(starSize);
+
 		loaded = true;
 	}
 }
@@ -198,9 +201,11 @@ void LevelOptions::drawInfoSquare(Chess::BotTypes botType) const
 {
 	if(infoSquareActive)
 	{
-		const Vector2 rectSize = {0.6f, 0.3f};
+		const Vector2 rectSize = {0.6f, 0.5f};
 		const Vector2 rectPos = {0.5f*(1.0f - rectSize.x), 0.5f*(1.0f - rectSize.y)};
 		const Rectangle rect = { rectPos.x, rectPos.y, rectSize.x, rectSize.y };
+		int strength = 0, speed = 0;
+		constexpr int maxScore = 4;
 		drawRectangle( rect, DARKBLUE );
 		drawRectangleLines(rect, 4.0f, BLACK);
 
@@ -210,38 +215,89 @@ void LevelOptions::drawInfoSquare(Chess::BotTypes botType) const
 		case RANDOMBOT:
 			title = "RANDOM BOT";
 			text = "Chooses moves at complete random.";
+			strength = 0;
+			speed = 4;
 			break;
 
 		case METROPOLISBOT:
 			title = "METROPOLIS BOT";
 			text = "Chooses moves at complete random,\nbut rejects moves that lead to\nworse positions.";
+			strength = 1;
+			speed = 2;
 			break;
 
 		case WEIGHTEDRANDOMBOT1:
 			title = "FOOL BOT";
 			text = "Chooses a chesspiece at random,\nthen chooses a random move based\non their weights.";
+			strength = 1;
+			speed = 3;
 			break;
 
 		case WEIGHTEDRANDOMBOT2:
 			title = "JESTER BOT";
 			text = "Chooses a random chesspiece and\nmove based on their weights.";
+			strength = 3;
+			speed = 1;
 			break;
 
 		case OPTIMUMBOT1:
 			title = "NOVICE BOT";
 			text = "Chooses a chesspiece at random,\nthen picks the best move.";
+			strength = 2;
+			speed = 3;
 			break;
 
 		case OPTIMUMBOT2:
 			title = "MASTER BOT";
 			text = "Chooses the best move available.";
+			strength = 4;
+			speed = 1;
 			break;
 		}
 
-		const Vector2 titleSize = Raylib::getTextSize(title,50.0f,0.1f);
-		constexpr float d = 0.01f;
+		const float titleFontSize = 50.0f;
+		const float textFontSize = 35.0f;
 
-		Raylib::drawText(title,{0.5f - 0.5f*titleSize.x, rect.y + d},50.0f);
-		Raylib::drawText(text,{rect.x + d, rect.y + titleSize.y + 5.0f*d},35.0f);
+		const Vector2 titleSize = Raylib::getTextSize(title, titleFontSize,0.1f);
+		const Vector2 textSize = Raylib::getTextSize(text, textFontSize, 0.1f);
+		
+		constexpr float d = 0.01f;
+		const Vector2 titlePos = {0.5f - 0.5f*titleSize.x, rect.y + d};
+		const Vector2 textPos = {rect.x + d, rect.y + titleSize.y + 5.0f*d};
+
+		Raylib::drawText(title, titlePos, titleFontSize);
+		Raylib::drawText(text,textPos, textFontSize);
+
+	
+		const Vector2 textStrengthSize = Raylib::getTextSize("Strength", textFontSize, 0.1f);
+		const float starXStart = textPos.x + textStrengthSize.x + d;
+		float starY = textPos.y + textSize.y + 2.0f*d;
+
+		Raylib::drawText("Strenght:",{textPos.x,starY + 0.5f*starSize.y - 0.5f*textStrengthSize.y},textFontSize);
+
+		for(int i=1; i<=strength; i++)
+		{
+			Resources::starFullTexture.setPosition({starXStart + (float)(i-1) * squareSize.x,starY} );
+			Resources::starFullTexture.draw();
+		}
+		for(int i=strength+1; i<=maxScore; i++)
+		{
+			Resources::starEmptyTexture.setPosition({starXStart + (float)(i-1) * squareSize.x,starY});
+			Resources::starEmptyTexture.draw();
+		}
+
+		starY += starSize.y;
+		Raylib::drawText("Speed:", {textPos.x,starY + 0.5f*starSize.y - 0.5f*textStrengthSize.y}, textFontSize);
+
+		for(int i=1; i<=speed; i++)
+		{
+			Resources::starFullTexture.setPosition({starXStart + (float)(i-1) * squareSize.x,starY});
+			Resources::starFullTexture.draw();
+		}
+		for(int i=speed+1; i<=maxScore; i++)
+		{
+			Resources::starEmptyTexture.setPosition({starXStart + (float)(i-1) * squareSize.x,starY});
+			Resources::starEmptyTexture.draw();
+		}
 	}
 }

@@ -14,6 +14,8 @@ void Resources::load()
 
 		arrowTexture.load();
 		cursorTexture.load();
+		starEmptyTexture.load();
+		starFullTexture.load();
 
 		loaded = true;
 	}
@@ -26,6 +28,8 @@ void Resources::unload()
 		textureSprites.unload();
 		arrowTexture.unload();
 		cursorTexture.unload();
+		starEmptyTexture.unload();
+		starFullTexture.unload();
 		loaded = false;
 	}
 }

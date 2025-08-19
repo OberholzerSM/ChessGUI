@@ -26,6 +26,7 @@ private:
     //Info-Square Variables
     bool infoSquareActive = false;
     Chess::BotTypes infoSquareBotType = Chess::OPTIMUMBOT2;
+    const Vector2 starSize = {0.75f*squareSize.x, 0.75f*squareSize.y};
 
     //Buttons
     SwitchButton buttonList[2][6]{};
