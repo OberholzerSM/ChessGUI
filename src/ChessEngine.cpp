@@ -1893,7 +1893,7 @@ int Chess::negamax(int depth, int saveCounter, int alpha, int beta, const std::v
 
     engine->saveBoardState(engine->turnCounter + saveCounter);
 
-    int max = INT_MIN;
+    int max = -INT_MAX;
     const PColour nextTurnColour = ((engine->turnColour == PWHITE) ? PBLACK : PWHITE);
     int legalMoveFound = false;
 
@@ -2387,9 +2387,9 @@ void Bot::findNegamaxMove(std::vector<ChessMove> moveList, std::size_t threadID)
     testEngine->turnCounterStart = 0;
     testEngine->saveBoardState(0);
 
-    int alpha = -INT_MAX;           //-INT_MAX, since otherwise alpha-1 would lead to underflow.
+    int alpha = -INT_MAX;           //-INT_MAX, since otherwise -alpha would lead to underflow.
     constexpr int beta = INT_MAX;
-    int maxWeight = INT_MIN;
+    int maxWeight = -INT_MAX;
     const PColour nextTurnColour = ((testEngine->turnColour == PWHITE) ? PBLACK : PWHITE);
 
     mtx.lock();
@@ -2409,38 +2409,6 @@ void Bot::findNegamaxMove(std::vector<ChessMove> moveList, std::size_t threadID)
 
         testEngine->makeMove(move);
         testEngine->advancePseudoTurn();
-        
-        //Test manually for Repetitions.
-        mtx2.lock();
-        int nRepetitions = 0;
-        if(testEngine->turnColour != PNONE && mainEngine.turnCounter > 21)
-        {
-            testEngine->saveBoardState(1);
-            for(std::size_t t=mainEngine.turnCounter; t >= mainEngine.turnCounter-20; t--)
-            {
-                for(int i=0; i<8; i++)
-                {
-                    for(int j=0; j<8; j++)
-                    {
-                        const ChessPiece *piece1 = mainEngine.boardStateList[t].board[i][j];
-                        const ChessPiece *piece2 = testEngine->boardStateList[1].board[i][j];
-
-                        if(mainEngine.getPieceLetter(piece1) != mainEngine.getPieceLetter(piece2))
-                            goto exitBoardLoop;
-                    }
-                }
-                ++nRepetitions;
-            exitBoardLoop:
-
-                if(nRepetitions >= 3)
-                {
-                    testEngine->turnColour = PNONE;
-                    testEngine->isdraw = true;
-                    break;
-                }
-            }
-        }
-        mtx2.unlock();
 
         //Determine the Weight
         if(testEngine->turnColour != PNONE)
@@ -2449,11 +2417,7 @@ void Bot::findNegamaxMove(std::vector<ChessMove> moveList, std::size_t threadID)
             newMoveList.assign(testEngine->moveListPseudo[nextTurnColour], testEngine->moveListPseudo[nextTurnColour] + testEngine->nMovesPseudo[nextTurnColour]);
 
             weight = -negamax(depth-1, 1, -beta, -alpha, newMoveList, testEngine);
-            if( weight > INT_MIN + nRepetitions * RepetitionWeight)
-                weight += nRepetitions * RepetitionWeight;
         }
-        else
-            weight = 0;
 
         if(weight > maxWeight)
         {
@@ -2465,6 +2429,9 @@ void Bot::findNegamaxMove(std::vector<ChessMove> moveList, std::size_t threadID)
             if(weight > alpha)
                 alpha = weight;
         }
+
+        if(weight >= beta)
+            break;
 
         testEngine->loadBoardState(0);
     }
