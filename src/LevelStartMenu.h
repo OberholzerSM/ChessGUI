@@ -41,7 +41,7 @@ private:
     Button buttonPlayervsPlayer{{buttonX,startpos*squareSize.x }, buttonSize, "Player vs. Player"};
     Button buttonPlayervsBot{{buttonX,(startpos+distance)*squareSize.x},buttonSize,"Player vs. Bot"};
     Button buttonBotvsBot{{buttonX,(startpos+2.0f*distance)*squareSize.x},buttonSize,"Bot vs. Bot"};
-    Button buttonCustom{{buttonX,(startpos+3.0f*distance)*squareSize.x},buttonSize,"To be added"};
+    Button buttonCustom{{buttonX,(startpos+3.0f*distance)*squareSize.x},buttonSize,"Setup Board"};
     Button buttonOptions{{buttonX,(startpos+4.0f*distance)*squareSize.x},buttonSize,"Options"};
     Button buttonExit{{buttonX,(startpos+5.0f*distance)*squareSize.x},buttonSize,"Exit"};
 

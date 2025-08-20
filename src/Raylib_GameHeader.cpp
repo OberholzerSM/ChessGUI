@@ -311,7 +311,7 @@ void Raylib::Button::checkInput()
     if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && selected)
         pressed = true;
 
-    if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+    if(IsMouseButtonReleased(MOUSE_BUTTON_LEFT) || !selected)
         pressed = false;
 }
 

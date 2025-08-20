@@ -121,7 +121,8 @@ void LevelStartMenu::inputButtonCustom()
     buttonCustom.checkInput();
     if( buttonCustom.pressed && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
-        std::cout << "To be added!\n";
+        levelStartMenu.unload();
+        levelSetupChessboard.load();
     }
 }
 
@@ -263,7 +264,7 @@ void LevelStartMenu::drawButtons() const
     buttonPlayervsPlayer.draw(DARKGRAY, DARKGRAY, RAYWHITE);
     buttonPlayervsBot.draw(DARKGRAY, DARKGRAY, RAYWHITE);
     buttonBotvsBot.draw(DARKGRAY, DARKGRAY, RAYWHITE);
-    //buttonCustom.draw(DARKGRAY, DARKGRAY, RAYWHITE);
+    buttonCustom.draw(DARKGRAY, DARKGRAY, RAYWHITE);
     buttonOptions.draw(DARKGRAY, DARKGRAY, RAYWHITE);
     buttonExit.draw(DARKGRAY, DARKGRAY, RAYWHITE);
 }

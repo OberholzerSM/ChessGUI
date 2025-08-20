@@ -152,6 +152,7 @@
     <ClInclude Include="src\ChessGUI.h" />
     <ClInclude Include="src\LevelChessboard.h" />
     <ClInclude Include="src\LevelOptions.h" />
+    <ClInclude Include="src\LevelSetupChessboard.h" />
     <ClInclude Include="src\LevelStartMenu.h" />
     <ClInclude Include="src\Random_Header.h" />
     <ClInclude Include="src\Raylib_GameHeader.h" />
@@ -163,6 +164,7 @@
     <ClCompile Include="src\ChessGUI.cpp" />
     <ClCompile Include="src\LevelChessboard.cpp" />
     <ClCompile Include="src\LevelOptions.cpp" />
+    <ClCompile Include="src\LevelSetupChessboard.cpp" />
     <ClCompile Include="src\LevelStartMenu.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Raylib_GameHeader.cpp" />

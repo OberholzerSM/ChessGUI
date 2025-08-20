@@ -109,7 +109,7 @@ void ChessPiece::move(const ChessMove &move)
         engine.turnsUntilDrawCounter = 0;
 
         //en passant
-        if(engine.board[end.i][end.j] == nullptr && abs(start.i - end.i) == 1)
+        if(engine.board[end.i][end.j] == nullptr && engine.board[end.i][start.j] != nullptr && abs(start.i - end.i) == 1)
             engine.board[end.i][start.j]->kill();
 
         //Double Move
@@ -239,7 +239,7 @@ void ChessPiece::KingPseudoLegal()
         }
     }
 
-    //Casteling
+    //Castling
     const int king_j = (colour==PWHITE) ? 7 : 0;
     if(!moved && pos.i == 4 && pos.j == king_j)
     {
@@ -975,6 +975,15 @@ void Engine::checkLateGame()
 void Engine::checkGameOver()
 {
     isdraw = false;
+
+    if( !kingWhite.alive || !kingBlack.alive )
+    {
+        turnColour = PNONE;
+        isdraw = true;
+        drawText = "The king is dead!";
+        return;
+    }
+
     for(int l=0; l<2; l++)
     {
         if(nAvailable[l] == 0)
@@ -1127,7 +1136,7 @@ void Engine::resetEnPassantFlags()
     }
 }
 
-bool Engine::checkCastelingRights(const ChessMove &move) const
+bool Engine::checkCastlingRights(const ChessMove &move) const
 {
     //If the King is in check, one cannot castle.
     if(piecesList[turnColour][KING]->checkCheck())
@@ -1187,11 +1196,11 @@ bool Engine::makeMove(const ChessMove &move)
         return false;
     }
 
-    const bool castelingMove = (move.endType == KING && abs(move.end.i-move.start.i)==2);
+    const bool castlingMove = (move.endType == KING && abs(move.end.i-move.start.i)==2);
     bool canCastle;
-    if(castelingMove)
+    if(castlingMove)
     {
-        canCastle = checkCastelingRights(move);
+        canCastle = checkCastlingRights(move);
         updateRooks(start,end);
     }
 
@@ -1205,7 +1214,7 @@ bool Engine::makeMove(const ChessMove &move)
     if(inCheck)
         return false;
 
-    if(castelingMove)
+    if(castlingMove)
         return canCastle;
 
     return true;
@@ -1433,7 +1442,7 @@ void Engine::loadFEN(const char *FEN)
         n++;
     }
 
-    //Set the Casteling to false.
+    //Set the Castling to false.
     kingWhite.moved  = true;
     rookWhiteL.moved = true;
     rookWhiteR.moved = true;
@@ -1633,7 +1642,7 @@ std::string Engine::getFEN() const
     //Turn-Colour
     FEN << ' ' << ( (turnColour == PWHITE) ? 'w' : 'b' ) << ' ';
 
-    //Casteling
+    //Castling
     bool canCastle = false;
     if(kingWhite.moved == false && rookWhiteR.moved == false)
     {

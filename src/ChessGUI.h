@@ -2,6 +2,7 @@
 #include "LevelStartMenu.h"
 #include "LevelChessboard.h"
 #include "LevelOptions.h"
+#include "LevelSetupChessboard.h"
 using namespace Raylib;
 
 //Put all the Ressources here, so every level has access to them.

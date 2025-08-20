@@ -52,7 +52,7 @@ namespace Chess
     //Position on the board. i and j take values 0-7. i goes left to right, j goes up to down (matrix representation).
     struct BoardPos { int i{}, j{}; };
 
-    //A ChessMove consits of a start- and end-position and a possible pawn-transformation. Casteling and en-passant can be checked manually.
+    //A ChessMove consits of a start- and end-position and a possible pawn-transformation. Castling and en-passant can be checked manually.
     struct ChessMove
     {
         BoardPos start{}, end{};
@@ -303,7 +303,7 @@ public:
 
     //Piece-specific
     
-    //Teleports the Rook to its casteling position.
+    //Teleports the Rook to its castling position.
     void teleportRook();
 
     //Checks if the Piece is threatened by another piece through pseudolegal moves.
@@ -433,8 +433,8 @@ public:
 
     //To execute a ChessMove
 private:
-    //Check if a Move is a valid Casteling-Move. Should be called before one executes the move.
-    bool checkCastelingRights(const ChessMove &move) const;
+    //Check if a Move is a valid Castling-Move. Should be called before one executes the move.
+    bool checkCastlingRights(const ChessMove &move) const;
 
     //Teleport the appropriate Rook if a King castles from Start to End.
     void updateRooks(const BoardPos &Start, const BoardPos &End);

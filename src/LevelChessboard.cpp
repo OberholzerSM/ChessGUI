@@ -20,6 +20,11 @@ void LevelChessboard::load()
 		reset();
 		tReset = Raylib::CLOCK.getTime() + 100.0; //Do not wait.
 
+		if(mainEngine.turnColour == PNONE)
+			drawGameOverIsActive = true;
+		else
+			drawGameOverIsActive = false;
+
 		//Resize the Sprites.
 		Resources::textureSprites.setSize(squareSize);
 		Resources::arrowTexture.setSize(squareSize);
