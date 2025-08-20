@@ -4,6 +4,15 @@
 
 A simple chess program done to further learn C++ and its features such as threads.
 
+## Credit
+
+- Game made using the Raylib library.
+	Raylib is licensed under the zlib/libpng license.
+
+- Chess sprites made by: jurgenwesterhof (adapted from work of Cburnett),
+	http://commons.wikimedia.org/wiki/Template:SVG_chess_pieces (20.08.2025).
+	File is licensed under the Creative Commons Attribution-Share Alike 3.0 Unported license.
+
 ## Features
 
 - Beginner-friendly features such as showing which squares a chesspiece can move to and the option to display the attack range of both sides.
@@ -31,3 +40,5 @@ A simple chess program done to further learn C++ and its features such as thread
   - The 'LevelOptions' files manage the option menu.
 
   - The 'LevelChessboard' files display the chess game based on the internal state of 'ChessEngine' and also manage player input and the UI elements.
+ 
+  - The 'LevelSetupChessboard' files manage the mode where you can setup your own chess positions.
