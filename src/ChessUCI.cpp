@@ -264,6 +264,7 @@ void ChessUCI::executePositionCommand()
     mainEngine.updateLegalMovement();
     mainEngine.checkLateGame();
     mainEngine.checkGameOver();
+    mainEngine.updateAttackZone();
     mainEngine.turnCounter = mainEngine.turnCounterStart;
     mainEngine.saveBoardState(mainEngine.turnCounter);
 
@@ -284,6 +285,7 @@ void ChessUCI::executePositionCommand()
         mainEngine.updateLegalMovement();
         mainEngine.checkLateGame();
         mainEngine.checkGameOver();
+        mainEngine.updateAttackZone();
     }
 
     if(mainEngine.turnColour == PNONE)
