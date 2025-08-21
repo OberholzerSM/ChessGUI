@@ -20,13 +20,13 @@ private:
 
      //Getting the Square the Mouse is hovering over.
     Chess::BoardPos getMouseSquare(bool flip = false) const;
-
+public:
     //Set the Sprite-Position off all Chesspieces according to their Board-Position.
     void setChessPieceSpritePos() const;
 
     //Set the Sprite-Destination off all Chesspieces according to their Board-Position.
     void setChessPieceSpriteDestination() const;
-
+private:
     //Pick up a Chesspiece at the start location
     void pickupPiece(const Chess::BoardPos &start) const;
 
@@ -41,10 +41,10 @@ private:
 
     //Move a Chesspiece slowly to its destination.
     void moveChessPiece(Chess::ChessPiece *piece) const;
-
+public:
     //Move all the Chesspieces slowly to their destination.
     void moveChessPieces();
-
+private:
     //Make a Chesspiece speak a line.
     void speak(const std::string &text, Chess::ChessPiece *piece);
 

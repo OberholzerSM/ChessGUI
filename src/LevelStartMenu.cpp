@@ -2,6 +2,7 @@
 #include "LevelChessboard.h"
 #include "LevelOptions.h"
 #include "ChessGUI.h"
+#include "ChessUCI.h"
 using namespace Chess;
 using namespace Raylib;
 
@@ -59,7 +60,10 @@ void LevelStartMenu::input()
         inputChoiceBox();
 
     if(IsKeyPressed(KEY_ESCAPE))
+    {
         choiceBoxActive = false;
+        ChessUCI::stopMainThread.store(true);
+    }
 }
 
 void LevelStartMenu::draw()

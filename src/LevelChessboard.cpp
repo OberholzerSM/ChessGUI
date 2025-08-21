@@ -12,7 +12,6 @@ void LevelChessboard::load()
 	//Switch the currently active level.
 	LevelID = this->ID();
 	ColorBackground = DARKGRAY;
-	stopThread.store(false);
 
 	if(!loaded)
 	{
@@ -90,7 +89,6 @@ void LevelChessboard::unload()
 	if(loaded)
 	{
 		resetBots();
-		stopThread.store(true);
 		loaded = false;
 	}
 }
@@ -621,7 +619,7 @@ void LevelChessboard::botSetSpriteDest(Chess::Bot &bot, double tStartBotSearch)
 	{
 		std::cerr << "ERROR inputBots: Generated move for nullptr! ";
 		mainEngine.printMove(bot.nextMove);
-		std::cout << '\n';
+		std::cerr << '\n';
 		return;
 	}
 

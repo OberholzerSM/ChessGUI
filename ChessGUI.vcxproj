@@ -151,6 +151,7 @@
   <ItemGroup>
     <ClInclude Include="src\ChessEngine.h" />
     <ClInclude Include="src\ChessGUI.h" />
+    <ClInclude Include="src\ChessUCI.h" />
     <ClInclude Include="src\LevelChessboard.h" />
     <ClInclude Include="src\LevelOptions.h" />
     <ClInclude Include="src\LevelSetupChessboard.h" />
@@ -163,6 +164,7 @@
   <ItemGroup>
     <ClCompile Include="src\ChessEngine.cpp" />
     <ClCompile Include="src\ChessGUI.cpp" />
+    <ClCompile Include="src\ChessUCI.cpp" />
     <ClCompile Include="src\LevelChessboard.cpp" />
     <ClCompile Include="src\LevelOptions.cpp" />
     <ClCompile Include="src\LevelSetupChessboard.cpp" />

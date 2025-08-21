@@ -1853,7 +1853,7 @@ void Chess::initialize()
 {
     bitboardInitializeKeys();
     mainEngine.initialize();
-    std::cout << "Chess Engine loaded.\n";
+    std::cout << "INFO: Chess Engine loaded.\n";
 }
 
 //Threads
@@ -1863,7 +1863,6 @@ void Chess::cleanUpThreads()
     const int nThreads = (int)threadList.size();
     if(nThreads <= 0)
         return;
-
     for(int i = nThreads-1; i>=0; i--)
     {
         if(threadDone[i])
@@ -1977,6 +1976,7 @@ int Bot::chooseRandomPiece() const
 
 void Bot::generateMove()
 {
+
     if(!searching.load())
     {
         searching.store(true);
@@ -1987,6 +1987,7 @@ void Bot::generateMove()
             [this]()
             {
                 std::size_t threadID = threadList.size()-1;
+                threadDone[threadID] = false;
 
                 switch(botType)
                 {
@@ -2369,7 +2370,8 @@ void Bot::findOptimumMove(const std::vector<ChessMove> &moveList)
     int maxWeight = INT_MIN, indexMaxWeight = 0;
     for(int n=0; n<nThreadsBot; n++)
     {
-        optimumThreadList[n].join();
+        if(optimumThreadList[n].joinable())
+            optimumThreadList[n].join();
         mtx.lock();
         const int weight = nextMoveWeightList[n];
         mtx.unlock();
