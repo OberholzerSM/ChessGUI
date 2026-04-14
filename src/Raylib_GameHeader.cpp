@@ -8,10 +8,13 @@ void Raylib::RayWindow::load()
     {
         SetConfigFlags(FLAG_WINDOW_RESIZABLE);
         InitWindow(width,height,"Chess");
+        #if defined(PLATFORM_WEB)
+        #else
         windowIcon = LoadImage("Sprites\\WindowIcon.png");
         ImageFormat(&windowIcon, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
         SetWindowIcon(windowIcon);
         SetTargetFPS(60);
+        #endif
         SetExitKey(NULL);
         active = true;
         loaded = true;

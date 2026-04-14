@@ -90,7 +90,7 @@ namespace Raylib
     class RaylibTexture
     {
     public:
-        RaylibTexture(const std::string& name,const Vector2 &size = {Window.widthf/10.0f,Window.heightf/10.0f}): SpriteName{"Sprites\\" + name}
+        RaylibTexture(const std::string& name,const Vector2 &size = {Window.widthf/10.0f,Window.heightf/10.0f}): SpriteName{"Sprites/" + name}
         {
             Size = {0.0f,0.0f,size.x,size.y};
             originPoint = {0.5f*size.x, 0.5f*size.y};

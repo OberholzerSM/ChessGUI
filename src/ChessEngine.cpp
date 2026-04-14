@@ -1811,6 +1811,9 @@ int Engine::getBoardWeight() const
                     case ROOK:
                         weight += sign * RookMobility[lateGame][nMoves];
                         break;
+
+                    case PAWN:
+                        break;
                     }
                 }
             }

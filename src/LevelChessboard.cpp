@@ -848,7 +848,11 @@ void LevelChessboard::inputSingleArrowButton(Button &button, int sign)
 		}
 	}
 	else
+#if defined(PLATFORM_WEB)
+		tStart[sign+1] = 1.7976931348623158e+308;
+#else
 		tStart[sign+1] = DBL_MAX;
+#endif
 }
 
 void LevelChessboard::inputArrowButtons()
