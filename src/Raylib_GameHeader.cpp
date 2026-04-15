@@ -8,6 +8,9 @@ void Raylib::RayWindow::load()
     {
         SetConfigFlags(FLAG_WINDOW_RESIZABLE);
         InitWindow(width,height,"Chess");
+        //Initialize the render texture.
+        renderTexture = LoadRenderTexture(width,height);
+        SetTextureFilter(renderTexture.texture, TEXTURE_FILTER_BILINEAR); 
         #if defined(PLATFORM_WEB)
         #else
         windowIcon = LoadImage("Sprites\\WindowIcon.png");
@@ -15,6 +18,10 @@ void Raylib::RayWindow::load()
         SetWindowIcon(windowIcon);
         SetTargetFPS(60);
         #endif
+        Window.size =    height / 8;
+        Window.sizef =   (float)Window.size;
+        Window.widthf =  (float)width;
+        Window.heightf = (float)height;
         SetExitKey(NULL);
         active = true;
         loaded = true;

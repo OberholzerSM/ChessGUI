@@ -50,6 +50,9 @@ namespace Raylib
 
         bool active{false};
 
+        //Texutre to draw to.
+        RenderTexture2D renderTexture;
+
     private:
         bool loaded{false};
         Image windowIcon{};
