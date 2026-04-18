@@ -54,7 +54,9 @@ void LevelStartMenu::input()
         inputButtonBotvsBot();
         inputButtonCustom();
         inputButtonOption();
+#if !defined(PLATFORM_WEB)
         inputButtonExit();
+#endif
     }
     else
         inputChoiceBox();
@@ -270,7 +272,9 @@ void LevelStartMenu::drawButtons() const
     buttonBotvsBot.draw(DARKGRAY, DARKGRAY, RAYWHITE);
     buttonCustom.draw(DARKGRAY, DARKGRAY, RAYWHITE);
     buttonOptions.draw(DARKGRAY, DARKGRAY, RAYWHITE);
+#if !defined(PLATFORM_WEB)
     buttonExit.draw(DARKGRAY, DARKGRAY, RAYWHITE);
+#endif
 }
 
 void LevelStartMenu::drawChoiceBox() const

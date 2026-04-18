@@ -7,6 +7,7 @@ emcc -o index.html src\ChessEngine.cpp src\ChessGUI.cpp src\ChessUCI.cpp src\Lev
  -s USE_GLFW=3 ^
  -s TOTAL_MEMORY=67108864 ^
  -s USE_PTHREADS=1 ^
+ -s ASSERTIONS ^
  --preload-file Sprites ^
  --shell-file C:\raylib\raylib\src\shell.html C:\raylib\raylib\src\web\libraylib.a ^
  -DPLATFORM_WEB
