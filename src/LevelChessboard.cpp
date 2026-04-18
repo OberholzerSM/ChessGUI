@@ -695,6 +695,18 @@ void LevelChessboard::inputMouse()
 		if(start.i >= 0 && start.i < 8 && start.j >= 0 && start.j < 8)
 		{
 			piece = mainEngine.board[start.i][start.j];
+
+			//Unpause if you do not click on an enemy piece.
+			if(paused && (piece == nullptr || (playerControll[piece->colour] && mainEngine.turnColourOld == piece->colour) ) )
+			{
+				paused = false;
+				mainEngine.turnColour = mainEngine.turnColourOld;
+				mainEngine.maxTurns = mainEngine.turnCounter;
+
+				if(mainEngine.checkmate[0] || mainEngine.checkmate[1] || mainEngine.isdraw)
+					drawGameOverIsActive = true;
+			}
+
 			if(piece != nullptr)
 			{
 				if(playerControll[piece->colour])
